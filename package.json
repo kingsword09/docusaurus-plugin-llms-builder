@@ -1,0 +1,29 @@
+{
+  "name": "docusaurus-plugin-llms-builder",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsdown"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.11.0",
+  "devDependencies": {
+    "@docusaurus/types": "^3.0.0",
+    "@types/node": "^22.15.21",
+    "tsdown": "^0.12.3",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {
+    "@docusaurus/core": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20.0"
+  }
+}
