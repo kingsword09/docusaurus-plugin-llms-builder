@@ -34,10 +34,15 @@
     "email": "kingsword09@gmail.com"
   },
   "packageManager": "pnpm@10.11.0",
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "minimatch": "^10.0.1"
+  },
   "devDependencies": {
     "@docusaurus/types": "^3.0.0",
     "@eslint/config-inspector": "^1.0.2",
     "@eslint/js": "^9.27.0",
+    "@types/minimatch": "^5.1.2",
     "@types/node": "^22.15.21",
     "eslint": "^9.27.0",
     "globals": "^16.2.0",
