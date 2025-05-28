@@ -1,7 +1,7 @@
 {
   "name": "docusaurus-plugin-llms-builder",
   "version": "0.0.1",
-  "description": "",
+  "description": "A Docusaurus plugin for generating standardized LLM configuration files (llms.txt, llms-full.txt)",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,9 +13,23 @@
   "files": [
     "dist"
   ],
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "docusaurus",
+    "docusaurus-plugin",
+    "llms.txt",
+    "llms-full.txt"
+  ],
+  "author": "Kingsword kingsword09 <kingsword09@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/kingsword09/docusaurus-plugin-llms-builder",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kingsword09/docusaurus-plugin-llms-builder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kingsword09/docusaurus-plugin-llms-builder/issues",
+    "email": "kingsword09@gmail.com"
+  },
   "packageManager": "pnpm@10.11.0",
   "devDependencies": {
     "@docusaurus/types": "^3.0.0",
@@ -38,6 +52,9 @@
     "node": ">=20.0"
   },
   "lint-staged": {
-    "**/*": "prettier --write --ignore-unknown"
+    "**/*": [
+      "prettier --write --ignore-unknown",
+      "pnpm lint"
+    ]
   }
 }
