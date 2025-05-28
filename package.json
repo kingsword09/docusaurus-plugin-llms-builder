@@ -4,12 +4,14 @@
   "description": "A Docusaurus plugin for generating standardized LLM configuration files (llms.txt, llms-full.txt)",
   "type": "module",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsdown",
     "prepare": "husky",
     "lint": "npx --node-options='--experimental-strip-types' eslint --flag unstable_native_nodejs_ts_config",
-    "lint:inspector": "npx @eslint/config-inspector"
+    "lint:fix": "pnpm lint --fix",
+    "lint:inspector": "npx eslint-config-inspector"
   },
   "files": [
     "dist"
