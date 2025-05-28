@@ -1,28 +1,44 @@
 import type { LoadContext, Plugin } from "@docusaurus/types";
-import type { PluginOptions } from "./options";
+
+import { collectCustomDocsFiles, collectDefaultDocsFiles } from "./docs";
+import type { PluginContext, PluginOptions } from "./types";
 
 export default function defineDocusaurusPlugins(context: LoadContext, options: PluginOptions): Plugin<void> {
-  const { siteConfig, siteDir, outDir } = context;
-  console.warn(siteConfig);
-  console.warn("QAQ");
-  console.warn(options);
+  const { siteConfig, siteDir, outDir, siteVersion } = context;
   const { title, description, version, defaultLLMConfig, extraLLMConfig } = options;
+  const siteUrl =
+    siteConfig.url + (siteConfig.baseUrl.endsWith("/") ? siteConfig.baseUrl.slice(0, -1) : siteConfig.baseUrl || "");
 
-  // const {
-  //   docsDir,
-  //   includeBlog,
-  //   ignorePatterns,
-  //   includePatterns,
-  //   orderPatterns,
-  //   generateLLMsTxt,
-  //   generateLLMsFullTxt,
-  //   extraLinks
-  // } = defaultLLMConfig;
+  const pluginContext: PluginContext = {
+    docTitle: title ?? siteConfig.title,
+    docDescription: description ?? siteConfig.tagline,
+    docVersion: version ?? siteVersion ?? "1.0.0",
+    outDir,
+    siteDir,
+    siteConfig,
+    siteUrl,
+    defaultLLMConfig,
+    extraLLMConfig,
+  };
 
   return {
     name: "docusaurus-plugin-llms-builder",
     async postBuild(): Promise<void> {
-      console.warn("QAQ");
+      const docsFiles = await collectDefaultDocsFiles(pluginContext.siteDir, defaultLLMConfig);
+
+      if (docsFiles.length === 0) {
+        console.warn("No default docs files found");
+        return;
+      }
+
+      if (extraLLMConfig) {
+        const customDocsFiles = await collectCustomDocsFiles(pluginContext.siteDir, extraLLMConfig);
+
+        if (customDocsFiles.length === 0) {
+          console.warn("No custom docs files found");
+          return;
+        }
+      }
     },
   };
 }

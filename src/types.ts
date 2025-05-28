@@ -1,16 +1,15 @@
-type ExtraLink = {
+import type { DocusaurusConfig } from "@docusaurus/types";
+
+export type ExtraLink = {
   title: string;
   link: string;
 };
 
-export type LLMPathConfig = {
+export type LLMPatternsConfig = {
   /**
-   * Parent directory path to traverse (e.g. 'docs')
-   * For 'separate' mode: generates llms-{filename}.txt for each file
-   * For 'combined' mode: generates llms-{dirname}.txt for the directory
-   * Note: Mode settings (separate/combined) are only configurable in extraLLMConfig
+   * Whether to include unmatched files last (default: false)
    */
-  docsDir: string;
+  includeUnmatched?: boolean;
 
   /**
    * Optional: Patterns to ignore when processing files (e.g. ['test/**'])
@@ -29,7 +28,15 @@ export type LLMPathConfig = {
   orderPatterns?: string[];
 };
 
-type LLMCustomConfig = LLMPathConfig & {
+type LLMCustomConfig = LLMPatternsConfig & {
+  /**
+   * Parent directory path to traverse (e.g. 'docs')
+   * For 'separate' mode: generates llms-{filename}.txt for each file
+   * For 'combined' mode: generates llms-{dirname}.txt for the directory
+   * Note: Mode settings (separate/combined) are only configurable in extraLLMConfig
+   */
+  docsDir: string;
+
   /**
    * Whether to generate llms.txt file (default: true)
    */
@@ -41,7 +48,11 @@ type LLMCustomConfig = LLMPathConfig & {
 };
 
 export type LLMDefaultConfig = {
-  includeBlog?: boolean;
+  /**
+   * Optional: Blog directory path to traverse (e.g. 'blog')
+   */
+  blogDirname?: string;
+
   /**
    * Optional: Additional external links or references to include
    */
@@ -49,6 +60,7 @@ export type LLMDefaultConfig = {
 } & LLMCustomConfig;
 
 type LLMGenerateMode = "separate" | "combined";
+export type LLMDocsType = "docs" | "blog";
 
 type LLMMetaData = {
   title: string;
@@ -56,6 +68,9 @@ type LLMMetaData = {
   name: string;
 };
 
+/**
+ * Metadata for LLM configuration
+ */
 export type ExtraLLMConfig = {
   /**
    * Specify a directory to automatically traverse all first-level subdirectories,
@@ -71,6 +86,11 @@ export type ExtraLLMConfig = {
   generateMode: LLMGenerateMode;
 } & LLMCustomConfig;
 
+/**
+ * Plugin options for configuring the LLM builder functionality
+ * Defines settings for generating LLM files, directory traversal,
+ * and metadata handling across the documentation site
+ */
 export type PluginOptions = {
   title?: string;
   description?: string;
@@ -88,4 +108,24 @@ export type PluginOptions = {
    * for individual directories and their contents
    */
   extraLLMConfig?: ExtraLLMConfig[];
+};
+
+export type PluginContext = {
+  docTitle: string;
+  docDescription: string;
+  docVersion: string;
+  outDir: string;
+  siteDir: string;
+  siteConfig: DocusaurusConfig;
+  siteUrl: string;
+  defaultLLMConfig: LLMDefaultConfig;
+  extraLLMConfig?: ExtraLLMConfig[];
+};
+
+export type DocsInfo = {
+  title: string;
+  path: string;
+  description: string;
+  link: string;
+  content: string;
 };
