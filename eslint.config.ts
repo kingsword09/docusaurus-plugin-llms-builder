@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint";
 
 const config: Linter.Config[] = [
   {
-    ignores: ["dist", "node_modules"],
+    ignores: ["dist", "node_modules", "examples"],
   },
   ...(tseslint.configs.recommended as Linter.Config[]),
   {
