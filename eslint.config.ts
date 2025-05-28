@@ -20,10 +20,7 @@ const config: Linter.Config[] = [
       },
     },
     rules: {
-      "object-curly-spacing": ["error", "always"],
-      "array-bracket-spacing": ["error", "never"],
       eqeqeq: ["error", "smart"],
-      "no-multi-spaces": "error",
       // 未使用的变量发出警告，但忽略以_开头的参数
       "no-console": ["warn", { allow: ["warn", "error"] }],
       "prefer-const": "error",
