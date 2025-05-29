@@ -20,30 +20,42 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
         "docusaurus-plugin-llms-builder",
         /** @type {import("docusaurus-plugin-llms-builder").PluginOptions} */
         ({
-          // Basic plugin options
-          title: "Enhanced Test Documentation",
-          description: "A comprehensive test suite for docusaurus-plugin-llms-builder",
-
-          includeBlog: true,
           version: "2.0.0",
+          llmConfigs: [
+            {
+              title: "xxx",
+              description: "xxx223uoiu",
+              summary: "xxx223uoiusdfjslkdfjsldkjf",
+              sessions: [
+                {
+                  type: "docs",
+                  docsDir: "docs",
+                  infixName: "xx",
+                  patterns: {
+                    ignorePatterns: ["**/tutorial-basics/**"],
+                  },
+                },
+                {
+                  type: "blog",
+                  docsDir: "blog",
+                  infixName: "sdkjflkj",
+                },
+              ],
 
-          defaultLLMConfig: {
-            docsDir: "docs",
-            includeBlog: true,
-            generateLLMsTxt: true,
-            generateLLMsFullTxt: true,
-            // File filtering options
-            ignoreFiles: ["**/*.test.md", "**/private/**", "**/internal-docs/**"],
+              generateLLMsTxt: true,
+              generateLLMsFullTxt: true,
 
-            // Content ordering
-            includeOrder: [
-              "**/getting-started/*.md",
-              "**/core/*.md",
-              "**/api/*.md",
-              "**/guides/*.md",
-              "**/examples/*.md",
-            ],
-          },
+              extraSession: {
+                sessionName: "xxx",
+                extraLinks: [
+                  {
+                    title: "xxxxsjlkdfj",
+                    link: "https://www.baidu.com",
+                  },
+                ],
+              },
+            },
+          ],
         }),
       ],
     ],

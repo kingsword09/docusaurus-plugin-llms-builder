@@ -90,9 +90,9 @@ export const markdownMetadataParser = async (options: {
   return {
     title,
     description,
+    summary: metadata.excerpt,
     content: metadata.content,
     link,
-    path: linkPath,
   } satisfies DocsInfo;
 };
 

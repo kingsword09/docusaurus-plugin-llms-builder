@@ -1,5 +1,4 @@
 ---
-slug: long-blog-post
 title: Long Blog Post
 slug: Long Blog
 authors: endi
