@@ -134,7 +134,7 @@ export const standardizeLLMsTxtContent = (llmStdConfig: LLMStdConfig, extraSessi
       const sessionItems = session.items
         .map((item) => {
           const baseLink = `- [${item.title}](${item.link})`;
-          return item.description ? `${baseLink}: ${item.description}` : `${baseLink}\n`;
+          return item.description ? `${baseLink}: ${item.description}` : `${baseLink}`;
         })
         .join("\n");
 
@@ -151,7 +151,7 @@ export const standardizeLLMsTxtContent = (llmStdConfig: LLMStdConfig, extraSessi
       extraSession.extraLinks
         .map((link) => {
           const baseLink = `- [${link.title}](${link.link})`;
-          return link.description ? `${baseLink}: ${link.description}` : `${baseLink}\n`;
+          return link.description ? `${baseLink}: ${link.description}` : `${baseLink}`;
         })
         .join("\n");
   }
