@@ -19,7 +19,7 @@ const collectPatternsDocsFiles = async (
     await fs.access(fullDocsDir);
 
     // Collect all markdown files from docs directory
-    const docFiles = await collectMarkdownFiles(fullDocsDir, siteDir, ignorePatterns);
+    const docFiles = await collectMarkdownFiles(siteDir, fullDocsDir, ignorePatterns);
     allDocsFiles.push(...docFiles);
   } catch (err) {
     console.warn(`Docs directory not found: ${fullDocsDir}`, err);
