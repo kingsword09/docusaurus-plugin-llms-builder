@@ -2,10 +2,9 @@ import { minimatch } from "minimatch";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import type { LLMConfig, LLMDocsType, LLMSessionFiles, PluginSiteConfig } from "./types";
+import type { LLMConfig, LLMSessionFiles, PluginSiteConfig } from "./types";
 
 const collectPatternsDocsFiles = async (
-  type: LLMDocsType,
   siteDir: string,
   docsDir: string,
   ignorePatterns?: string[],
@@ -38,15 +37,8 @@ const collectPatternsDocsFiles = async (
 export const collectLLMSessionFiles = async (siteDir: string, llmConfig: LLMConfig): Promise<LLMSessionFiles[]> => {
   const llmSessionFiles: LLMSessionFiles[] = [];
 
-  console.warn("llmConfig.sessions: ", JSON.stringify(llmConfig.sessions));
-
   for (const session of llmConfig.sessions) {
-    const docsFiles = await collectPatternsDocsFiles(
-      session.type,
-      siteDir,
-      session.docsDir,
-      session.patterns?.ignorePatterns ?? [],
-    );
+    const docsFiles = await collectPatternsDocsFiles(siteDir, session.docsDir, session.patterns?.ignorePatterns ?? []);
 
     if (docsFiles.length === 0) {
       console.warn("No docs files found: ", JSON.stringify(session));

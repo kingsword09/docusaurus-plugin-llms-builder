@@ -4,7 +4,7 @@ import { parseMarkdownFile } from "@docusaurus/utils";
 import fs from "fs/promises";
 import path from "path";
 
-import type { DocsInfo } from "./types";
+import type { DocsInfo, LLMDocsType } from "./types";
 
 /**
  * parse markdown file title
@@ -65,6 +65,7 @@ export const markdownParser = async (
  * @returns
  */
 export const markdownMetadataParser = async (options: {
+  type: LLMDocsType;
   filePath: string;
   siteConfig: DocusaurusConfig;
   baseDir: string;
@@ -72,14 +73,38 @@ export const markdownMetadataParser = async (options: {
   pathPrefix?: string;
   removeContentTitle?: boolean;
 }): Promise<DocsInfo> => {
-  const { filePath, removeContentTitle, siteConfig, baseDir, siteUrl, pathPrefix } = options;
+  const { type, filePath, removeContentTitle, siteConfig, baseDir, siteUrl, pathPrefix } = options;
   const metadata = await markdownParser(filePath, removeContentTitle ?? false, siteConfig);
-
   const normalizedPath = path.normalize(path.relative(baseDir, filePath));
   // Convert .md extension to appropriate path
   const linkPathBase = normalizedPath.replace(/\.mdx?$/, "");
   const linkPath = linkPathBase.endsWith("index") ? linkPathBase.replace(/\/index$/, "") : linkPathBase;
-  const link = new URL(path.join(pathPrefix ?? "", linkPath), siteUrl).toString();
+
+  let finalLinkPath = linkPath;
+  if (type === "blog") {
+    if (metadata.frontMatter.slug) {
+      finalLinkPath = metadata.frontMatter.slug as string;
+    } else {
+      const dateMatch = linkPath.match(/(\d{4})-(\d{2})-(\d{2})/);
+      if (dateMatch) {
+        // Check if the date is more than a year old
+        const currentDate = new Date();
+        const postDate = new Date(parseInt(dateMatch[1]!), parseInt(dateMatch[2]!) - 1, parseInt(dateMatch[3]!));
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(currentDate.getFullYear() - 1);
+
+        if (postDate < oneYearAgo) {
+          // If post is older than a year, remove the date from the path
+          finalLinkPath = linkPath.replace(/\d{4}-\d{2}-\d{2}-/, "");
+        } else {
+          // Otherwise, keep the date in YYYY/MM/DD format
+          finalLinkPath = linkPath.replace(/(\d{4})-(\d{2})-(\d{2})-/, "$1/$2/$3");
+        }
+      }
+    }
+  }
+
+  const link = new URL(path.join(pathPrefix ?? "", finalLinkPath), siteUrl).toString();
 
   const title = titleParser(filePath, metadata.frontMatter, metadata.content, metadata.contentTitle);
   const description =

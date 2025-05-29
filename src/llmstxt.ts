@@ -56,6 +56,7 @@ export const generateLLMStdConfig = async (
     };
     for await (const filePath of llmSessionFile.docsFiles) {
       const { title, description, link } = await markdownMetadataParser({
+        type: llmSessionFile.type,
         filePath,
         siteConfig: pluginSiteConfig.siteConfig,
         baseDir: path.join(pluginSiteConfig.siteDir, llmSessionFile.docsDir),
@@ -76,7 +77,6 @@ export const generateLLMStdConfig = async (
     }
   }
 
-  console.warn("stdConfig: ", JSON.stringify(stdConfig));
   return stdConfig;
 };
 
@@ -97,6 +97,7 @@ export const generateLLMFullStdConfig = async (
   for await (const llmSessionFile of llmSessionFiles) {
     for await (const filePath of llmSessionFile.docsFiles) {
       const { title, content } = await markdownMetadataParser({
+        type: llmSessionFile.type,
         filePath,
         siteConfig: pluginSiteConfig.siteConfig,
         baseDir: path.join(pluginSiteConfig.siteDir, llmSessionFile.docsDir),
@@ -111,8 +112,6 @@ export const generateLLMFullStdConfig = async (
       });
     }
   }
-
-  console.warn("stdFullConfig: ", JSON.stringify(stdFullConfig));
 
   return stdFullConfig;
 };
