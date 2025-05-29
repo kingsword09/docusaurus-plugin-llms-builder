@@ -30,7 +30,6 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
                 {
                   type: "docs",
                   docsDir: "docs",
-                  infixName: "xx",
                   patterns: {
                     ignorePatterns: ["**/tutorial-basics/**"],
                   },
@@ -38,7 +37,6 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
                 {
                   type: "blog",
                   docsDir: "blog",
-                  infixName: "sdkjflkj",
                 },
               ],
 

@@ -72,7 +72,6 @@ export type LLMDocsType = "docs" | "blog";
 export type LLMSession = {
   type: LLMDocsType;
   docsDir: string;
-  infixName?: string;
   patterns?: LLMPatternsConfig;
 };
 
@@ -94,6 +93,7 @@ export type ExtraSession = {
 };
 
 export type LLMCommonConfig = {
+  infixName?: string;
   /**
    * Whether to generate llms.txt file (default: true)
    */

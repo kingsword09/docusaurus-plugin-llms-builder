@@ -36,7 +36,7 @@ type LLMFullStdConfig = {
 };
 
 export const generateLLMStdConfig = async (
-  llmSessionFiles: LLMSessionFiles,
+  llmSessionFiles: LLMSessionFiles[],
   llmConfig: LLMConfig,
   pluginSiteConfig: PluginSiteConfig,
 ): Promise<LLMStdConfig> => {
@@ -49,34 +49,39 @@ export const generateLLMStdConfig = async (
     sessions: [],
   };
 
-  const session: LLMSession = {
-    sessionName: llmSessionFiles.infixName ?? llmSessionFiles.docsDir,
-    items: [],
-  };
+  for await (const llmSessionFile of llmSessionFiles) {
+    const session: LLMSession = {
+      sessionName: llmSessionFile.docsDir,
+      items: [],
+    };
+    for await (const filePath of llmSessionFile.docsFiles) {
+      const { title, description, link } = await markdownMetadataParser({
+        filePath,
+        siteConfig: pluginSiteConfig.siteConfig,
+        baseDir: path.join(pluginSiteConfig.siteDir, llmSessionFile.docsDir),
+        siteUrl: pluginSiteConfig.siteUrl,
+        pathPrefix: llmSessionFile.docsDir,
+        removeContentTitle: true,
+      });
 
-  for await (const filePath of llmSessionFiles.docsFiles) {
-    const { title, description, link } = await markdownMetadataParser({
-      filePath,
-      siteConfig: pluginSiteConfig.siteConfig,
-      baseDir: path.join(pluginSiteConfig.siteDir, llmSessionFiles.docsDir),
-      siteUrl: pluginSiteConfig.siteUrl,
-      pathPrefix: llmSessionFiles.docsDir,
-      removeContentTitle: true,
-    });
-    session.items.push({
-      title: title ?? "",
-      description: description ?? "",
-      link: link ?? "",
-    });
+      session.items.push({
+        title: title ?? "",
+        description: description ?? "",
+        link: link ?? "",
+      });
+    }
+
+    if (session.items.length > 0) {
+      stdConfig.sessions.push(session);
+    }
   }
-  stdConfig.sessions.push(session);
 
   console.warn("stdConfig: ", JSON.stringify(stdConfig));
   return stdConfig;
 };
 
 export const generateLLMFullStdConfig = async (
-  llmSessionFiles: LLMSessionFiles,
+  llmSessionFiles: LLMSessionFiles[],
   llmConfig: LLMConfig,
   pluginSiteConfig: PluginSiteConfig,
 ): Promise<LLMFullStdConfig> => {
@@ -89,20 +94,22 @@ export const generateLLMFullStdConfig = async (
     sessions: [],
   };
 
-  for await (const filePath of llmSessionFiles.docsFiles) {
-    const { title, content } = await markdownMetadataParser({
-      filePath,
-      siteConfig: pluginSiteConfig.siteConfig,
-      baseDir: path.join(pluginSiteConfig.siteDir, llmSessionFiles.docsDir),
-      siteUrl: pluginSiteConfig.siteUrl,
-      pathPrefix: llmSessionFiles.docsDir,
-      removeContentTitle: true,
-    });
+  for await (const llmSessionFile of llmSessionFiles) {
+    for await (const filePath of llmSessionFile.docsFiles) {
+      const { title, content } = await markdownMetadataParser({
+        filePath,
+        siteConfig: pluginSiteConfig.siteConfig,
+        baseDir: path.join(pluginSiteConfig.siteDir, llmSessionFile.docsDir),
+        siteUrl: pluginSiteConfig.siteUrl,
+        pathPrefix: llmSessionFile.docsDir,
+        removeContentTitle: true,
+      });
 
-    stdFullConfig.sessions.push({
-      title: title ?? "",
-      content,
-    });
+      stdFullConfig.sessions.push({
+        title: title ?? "",
+        content,
+      });
+    }
   }
 
   console.warn("stdFullConfig: ", JSON.stringify(stdFullConfig));
@@ -167,7 +174,7 @@ export const standardizeLLMsFullTxtContent = (llmFullStdConfig: LLMFullStdConfig
   // Generate sessions content
   const sessionsContent = llmFullStdConfig.sessions
     .map((session) => {
-      const sessionHeader = `\n## ${session.title}\n`;
+      const sessionHeader = `\n\n## ${session.title}\n`;
       const sessionItems = session.content;
       return sessionHeader + sessionItems + "\n---\n";
     })
@@ -189,8 +196,6 @@ export const generateLLMsTxt = async (outDir: string, filename: string, content:
 
 export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void> => {
   const { pluginSiteConfig, llmConfigs } = context;
-  console.warn("llmConfigs: ", JSON.stringify(llmConfigs));
-  console.warn("pluginSiteConfig: ", JSON.stringify(pluginSiteConfig));
 
   for await (const llmConfig of llmConfigs) {
     // 1. check if generateLLMsTxt or generateLLMsFullTxt is true
@@ -208,29 +213,29 @@ export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void>
     }
 
     // 4. Process docs files
+    const sessionFiles = [];
     for await (const llmSessionFile of llmSessionFiles) {
-      const sessionFiles = await processLLMSessionsFilesWithPatternFilters(llmSessionFile, pluginSiteConfig);
-
+      const sessionFile = await processLLMSessionsFilesWithPatternFilters(llmSessionFile, pluginSiteConfig);
+      sessionFiles.push(sessionFile);
+    }
+    if (llmConfig.generateLLMsTxt) {
       const stdConfig = await generateLLMStdConfig(sessionFiles, llmConfig, pluginSiteConfig);
+      const llmsTxtContent = standardizeLLMsTxtContent(stdConfig, llmConfig.extraSession);
+      await generateLLMsTxt(
+        pluginSiteConfig.outDir,
+        llmConfig.infixName ? `llms-${llmConfig.infixName}.txt` : "llms.txt",
+        llmsTxtContent,
+      );
+    }
 
-      if (llmConfig.generateLLMsTxt) {
-        const llmsTxtContent = standardizeLLMsTxtContent(stdConfig, llmConfig.extraSession);
-        await generateLLMsTxt(
-          pluginSiteConfig.outDir,
-          llmSessionFile.infixName ? `llms-${llmSessionFile.infixName}.txt` : "llms.txt",
-          llmsTxtContent,
-        );
-      }
-
-      if (llmConfig.generateLLMsFullTxt) {
-        const llmFullStdConfig = await generateLLMFullStdConfig(sessionFiles, llmConfig, pluginSiteConfig);
-        const llmsFullTxtContent = standardizeLLMsFullTxtContent(llmFullStdConfig);
-        await generateLLMsTxt(
-          pluginSiteConfig.outDir,
-          llmSessionFile.infixName ? `llms-${llmSessionFile.infixName}-full.txt` : "llms-full.txt",
-          llmsFullTxtContent,
-        );
-      }
+    if (llmConfig.generateLLMsFullTxt) {
+      const llmFullStdConfig = await generateLLMFullStdConfig(sessionFiles, llmConfig, pluginSiteConfig);
+      const llmsFullTxtContent = standardizeLLMsFullTxtContent(llmFullStdConfig);
+      await generateLLMsTxt(
+        pluginSiteConfig.outDir,
+        llmConfig.infixName ? `llms-${llmConfig.infixName}-full.txt` : "llms-full.txt",
+        llmsFullTxtContent,
+      );
     }
   }
 };
