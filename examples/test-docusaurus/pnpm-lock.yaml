@@ -24,7 +24,7 @@ importers:
         version: 1.2.1
       docusaurus-plugin-llms-builder:
         specifier: file:../..
-        version: file:../..(@docusaurus/core@3.8.0(@mdx-js/react@3.1.0(@types/react@19.1.6)(react@18.3.1))(acorn@8.14.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: file:../..(@docusaurus/core@3.8.0(@mdx-js/react@3.1.0(@types/react@19.1.6)(react@18.3.1))(acorn@8.14.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(acorn@8.14.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       file-loader:
         specifier: ^6.2.0
         version: 6.2.0(webpack@5.99.9)
@@ -9713,11 +9713,20 @@ snapshots:
     dependencies:
       "@leichtgewicht/ip-codec": 2.0.5
 
-  docusaurus-plugin-llms-builder@file:../..(@docusaurus/core@3.8.0(@mdx-js/react@3.1.0(@types/react@19.1.6)(react@18.3.1))(acorn@8.14.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
+  docusaurus-plugin-llms-builder@file:../..(@docusaurus/core@3.8.0(@mdx-js/react@3.1.0(@types/react@19.1.6)(react@18.3.1))(acorn@8.14.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(acorn@8.14.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       "@docusaurus/core": 3.8.0(@mdx-js/react@3.1.0(@types/react@19.1.6)(react@18.3.1))(acorn@8.14.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      gray-matter: 4.0.3
+      "@docusaurus/utils": 3.8.0(acorn@8.14.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       minimatch: 10.0.1
+    transitivePeerDependencies:
+      - "@swc/core"
+      - acorn
+      - esbuild
+      - react
+      - react-dom
+      - supports-color
+      - uglify-js
+      - webpack-cli
 
   dom-converter@0.2.0:
     dependencies:

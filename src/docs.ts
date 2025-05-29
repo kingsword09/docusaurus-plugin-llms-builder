@@ -3,7 +3,7 @@ import { minimatch } from "minimatch";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { readMarkdownFiles } from "./fs";
+import { collectMarkdownFiles } from "./fs";
 import { markdownMetadataParser } from "./markdown";
 import type { DocsInfo, ExtraLLMConfig, LLMDefaultConfig, LLMPatternsConfig } from "./types";
 
@@ -22,7 +22,7 @@ const collectIgnorePatternsDocsFiles = async (
     await fs.access(fullDocsDir);
 
     // Collect all markdown files from docs directory
-    const docFiles = await readMarkdownFiles(fullDocsDir, siteDir, ignorePatterns);
+    const docFiles = await collectMarkdownFiles(fullDocsDir, siteDir, ignorePatterns);
     allDocsFiles.push(...docFiles);
   } catch (err) {
     console.warn(`Docs directory not found: ${fullDocsDir}`, err);
@@ -36,7 +36,7 @@ const collectIgnorePatternsDocsFiles = async (
       await fs.access(blogDir);
 
       // Collect all markdown files from blog directory
-      const blogFiles = await readMarkdownFiles(siteDir, blogDir, ignorePatterns);
+      const blogFiles = await collectMarkdownFiles(siteDir, blogDir, ignorePatterns);
       allDocsFiles.push(...blogFiles);
     } catch (err) {
       console.warn(`Blog directory not found: ${blogDir}`, err);

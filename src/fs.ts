@@ -30,7 +30,7 @@ export const shouldIgnoreFile = (baseDir: string, filePath: string, ignorePatter
  * @param ignorePatterns - Glob patterns for files to ignore
  * @returns Array of file paths
  */
-export const readMarkdownFiles = async (
+export const collectMarkdownFiles = async (
   baseDir: string,
   dir: string,
   ignorePatterns: string[] = [],
@@ -46,7 +46,7 @@ export const readMarkdownFiles = async (
     }
 
     if (entry.isDirectory()) {
-      const subDirFiles = await readMarkdownFiles(baseDir, fullPath, ignorePatterns);
+      const subDirFiles = await collectMarkdownFiles(baseDir, fullPath, ignorePatterns);
       files.push(...subDirFiles);
     } else if (entry.name.endsWith(".md") || entry.name.endsWith(".mdx")) {
       files.push(fullPath);
@@ -93,7 +93,7 @@ ${doc.content}`;
 
 > ${fileDescription}${versionInfo}
 
-This file contains all documentation content in a single document following the llmtxt.org standard.
+This file contains all documentation content in a single document following the llmstxt.org standard.
 
 ${fullContentSections.join("\n\n---\n\n")}
 `;
@@ -112,7 +112,7 @@ ${fullContentSections.join("\n\n---\n\n")}
 
 > ${fileDescription}${versionInfo}
 
-This file contains links to documentation sections following the llmtxt.org standard.
+This file contains links to documentation sections following the llmstxt.org standard.
 
 ## Table of Contents
 
