@@ -25,6 +25,14 @@ export default function defineDocusaurusPlugins(context: LoadContext, options: P
     async postBuild(): Promise<void> {
       await generateLLMsTxtFlow(pluginContext);
     },
+    extendCli(cli) {
+      cli
+        .command("llms")
+        .description("Generate llms.txt and llms-full.txt file by scanning all documentation files in the directory")
+        .action(async () => {
+          await generateLLMsTxtFlow(pluginContext);
+        });
+    },
   };
 }
 

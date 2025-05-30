@@ -30,6 +30,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
                 {
                   type: "docs",
                   docsDir: "docs",
+                  sitemap: "sitemap.xml",
                   patterns: {
                     ignorePatterns: ["**/tutorial-basics/**"],
                   },
@@ -37,6 +38,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
                 {
                   type: "blog",
                   docsDir: "blog",
+                  rss: "rss.xml",
                 },
               ],
 

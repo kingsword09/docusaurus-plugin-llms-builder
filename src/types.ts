@@ -69,11 +69,33 @@ export type LLMDocsType = "docs" | "blog";
 /**
  * Configuration for docs type content, supporting sidebar and pattern-based content retrieval
  */
-export type LLMSession = {
-  type: LLMDocsType;
-  docsDir: string;
-  patterns?: LLMPatternsConfig;
-};
+export type LLMSession =
+  | {
+      type: "docs";
+      docsDir: string;
+      /**
+       * Optional: Configuration for file patterns and traversal method
+       */
+      patterns?: LLMPatternsConfig;
+      /**
+       * Optional: Whether to use sitemap for file discovery instead of recursive traversal
+       * @default false
+       */
+      sitemap?: string;
+    }
+  | {
+      type: "blog";
+      docsDir: string;
+      /**
+       * Optional: Configuration for file patterns and traversal method
+       */
+      patterns?: LLMPatternsConfig;
+      /**
+       * Optional: Whether to use sitemap for file discovery instead of recursive traversal
+       * @default false
+       */
+      rss?: string;
+    };
 
 export type LLMDocsConfig = LLMHeaderConfig & {
   sessions: LLMSession[];
