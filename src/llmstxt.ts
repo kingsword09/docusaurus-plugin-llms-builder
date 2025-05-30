@@ -184,7 +184,7 @@ export const standardizeLLMsFullTxtContent = (llmFullStdConfig: LLMFullStdConfig
   const sessionsContent = llmFullStdConfig.sessions
     .map((session) => {
       const sessionHeader = `\n\n## ${session.title}\n`;
-      const sessionItems = session.content;
+      const sessionItems = `\n${session.content}\n`;
       return sessionHeader + sessionItems + "\n---\n";
     })
     .join("");

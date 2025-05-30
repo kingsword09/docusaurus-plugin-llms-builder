@@ -198,7 +198,6 @@ export const getAllDocusaurusBuildFilesPaths = async (outDir: string): Promise<S
       const fullPath = path.join(outDir, file.toString());
       const stat = await fs.stat(fullPath);
       if (stat.isFile()) {
-        console.warn("Found file: ", file, file.endsWith("index.html"));
         existingPaths.add(
           file.endsWith("index.html") ? (file === "index.html" ? "/" : file.replace("/index.html", "")) : file,
         );
