@@ -36,6 +36,7 @@
   "packageManager": "pnpm@10.11.0",
   "dependencies": {
     "@docusaurus/utils": "^3.8.0",
+    "fuse.js": "^7.1.0",
     "minimatch": "^10.0.1"
   },
   "devDependencies": {

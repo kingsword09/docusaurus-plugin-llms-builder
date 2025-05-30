@@ -1,7 +1,11 @@
 import { generate } from "@docusaurus/utils";
 import path from "node:path";
 
-import { collectLLMSessionFiles, processLLMSessionsFilesWithPatternFilters } from "./docs";
+import {
+  collectLLMSessionFiles,
+  getAllDocusaurusBuildFilesPaths,
+  processLLMSessionsFilesWithPatternFilters,
+} from "./docs";
 import { markdownMetadataParser } from "./markdown";
 import type { ExtraSession, LLMConfig, LLMSessionFiles, PluginContext, PluginSiteConfig } from "./types";
 
@@ -36,6 +40,7 @@ type LLMFullStdConfig = {
 };
 
 export const generateLLMStdConfig = async (
+  buildFilesPaths: Set<string>,
   llmSessionFiles: LLMSessionFiles[],
   llmConfig: LLMConfig,
   pluginSiteConfig: PluginSiteConfig,
@@ -57,6 +62,7 @@ export const generateLLMStdConfig = async (
     for await (const filePath of llmSessionFile.docsFiles) {
       const { title, description, link } = await markdownMetadataParser({
         type: llmSessionFile.type,
+        buildFilesPaths,
         filePath,
         siteConfig: pluginSiteConfig.siteConfig,
         baseDir: path.join(pluginSiteConfig.siteDir, llmSessionFile.docsDir),
@@ -81,6 +87,7 @@ export const generateLLMStdConfig = async (
 };
 
 export const generateLLMFullStdConfig = async (
+  buildFilesPaths: Set<string>,
   llmSessionFiles: LLMSessionFiles[],
   llmConfig: LLMConfig,
   pluginSiteConfig: PluginSiteConfig,
@@ -98,6 +105,7 @@ export const generateLLMFullStdConfig = async (
     for await (const filePath of llmSessionFile.docsFiles) {
       const { title, content } = await markdownMetadataParser({
         type: llmSessionFile.type,
+        buildFilesPaths,
         filePath,
         siteConfig: pluginSiteConfig.siteConfig,
         baseDir: path.join(pluginSiteConfig.siteDir, llmSessionFile.docsDir),
@@ -211,14 +219,17 @@ export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void>
       continue;
     }
 
-    // 4. Process docs files
+    // 4. Get all build file paths and process index.html
+    const buildFilesPaths = await getAllDocusaurusBuildFilesPaths(pluginSiteConfig.outDir);
+
+    // 5. Process docs files
     const sessionFiles = [];
     for await (const llmSessionFile of llmSessionFiles) {
       const sessionFile = await processLLMSessionsFilesWithPatternFilters(llmSessionFile, pluginSiteConfig);
       sessionFiles.push(sessionFile);
     }
     if (llmConfig.generateLLMsTxt) {
-      const stdConfig = await generateLLMStdConfig(sessionFiles, llmConfig, pluginSiteConfig);
+      const stdConfig = await generateLLMStdConfig(buildFilesPaths, sessionFiles, llmConfig, pluginSiteConfig);
       const llmsTxtContent = standardizeLLMsTxtContent(stdConfig, llmConfig.extraSession);
       await generateLLMsTxt(
         pluginSiteConfig.outDir,
@@ -228,7 +239,12 @@ export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void>
     }
 
     if (llmConfig.generateLLMsFullTxt) {
-      const llmFullStdConfig = await generateLLMFullStdConfig(sessionFiles, llmConfig, pluginSiteConfig);
+      const llmFullStdConfig = await generateLLMFullStdConfig(
+        buildFilesPaths,
+        sessionFiles,
+        llmConfig,
+        pluginSiteConfig,
+      );
       const llmsFullTxtContent = standardizeLLMsFullTxtContent(llmFullStdConfig);
       await generateLLMsTxt(
         pluginSiteConfig.outDir,

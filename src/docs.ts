@@ -169,3 +169,29 @@ export const collectMarkdownFiles = async (
 
   return files;
 };
+
+/**
+ * Get all docusaurus build files paths
+ * @param outDir
+ * @returns
+ */
+export const getAllDocusaurusBuildFilesPaths = async (outDir: string): Promise<Set<string>> => {
+  const existingPaths = new Set<string>();
+
+  try {
+    const files = await fs.readdir(outDir, { recursive: true });
+    for (const file of files) {
+      if (!file.endsWith(".html")) continue;
+
+      const fullPath = path.join(outDir, file.toString());
+      const stat = await fs.stat(fullPath);
+      if (stat.isFile()) {
+        existingPaths.add(file.endsWith("index.html") ? file.replace("/index.html", "") : file);
+      }
+    }
+  } catch (error) {
+    console.warn("Error reading outDir directory:", error);
+  }
+
+  return existingPaths;
+};
