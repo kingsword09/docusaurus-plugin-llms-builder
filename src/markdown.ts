@@ -1,9 +1,9 @@
 import type { DocusaurusConfig } from "@docusaurus/types";
 import type { ParseFrontMatterResult } from "@docusaurus/types/src/config";
 import { parseMarkdownFile } from "@docusaurus/utils";
-import fs from "fs/promises";
 import Fuse, { type IFuseOptions } from "fuse.js";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 import type { DocsInfo, LLMDocsType } from "./types";
 import { htmlContentParser } from "./xml";

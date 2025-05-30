@@ -1,4 +1,5 @@
 import { generate } from "@docusaurus/utils";
+import assert from "node:assert";
 import path from "node:path";
 
 import {
@@ -7,7 +8,7 @@ import {
   processLLMSessionsFilesWithPatternFilters,
 } from "./docs";
 import { markdownMetadataParser } from "./markdown";
-import type { ExtraSession, LLMSessionFiles, PluginContext, PluginSiteConfig } from "./types";
+import type { ExtraSession, LLMConfig, LLMSessionFiles, PluginContext, PluginSiteConfig } from "./types";
 import { htmlContentParser, htmlTitleParser, parseRssItems, sitemapParser } from "./xml";
 
 type LLMSessionItem = {
@@ -39,6 +40,8 @@ type LLMFullStdConfig = {
   summary?: string;
   sessions: LLMFullSessionItem[];
 };
+
+type LLMOutputConfig = { updatedStandardConfig: LLMStdConfig; updatedFullContentConfig: LLMFullStdConfig };
 
 export const generateLLMStdConfig = async (
   stdConfig: LLMStdConfig,
@@ -186,118 +189,220 @@ export const generateLLMsTxt = async (outDir: string, filename: string, content:
   return generate(outDir, filename, content, true);
 };
 
+/**
+ * 初始化LLM配置对象
+ */
+const initializeLLMConfigurations = (config: LLMConfig): LLMOutputConfig => {
+  return {
+    updatedStandardConfig: {
+      title: config.title ?? "",
+      description: config.description ?? "",
+      summary: config.summary ?? "",
+      sessions: [],
+    },
+    updatedFullContentConfig: {
+      title: config.title ?? "",
+      description: config.description ?? "",
+      summary: config.summary ?? "",
+      sessions: [],
+    },
+  };
+};
+
+/**
+ * 处理文档类型的会话文件
+ */
+const processDocumentationSession = async (
+  sessionFileData: LLMSessionFiles,
+  siteConfig: PluginSiteConfig,
+  standardConfig: LLMStdConfig,
+  fullContentConfig: LLMFullStdConfig,
+): Promise<LLMOutputConfig> => {
+  assert(sessionFileData.type === "docs", `Session ${sessionFileData.docsDir} is not a docs type, skipping processing`);
+
+  const sessionSummary: LLMSession = {
+    sessionName: sessionFileData.docsDir,
+    items: [],
+  };
+  const fullContentSession: LLMFullSessionItem = {
+    title: sessionFileData.docsDir,
+    content: "",
+  };
+
+  const sitemapPath = path.join(siteConfig.outDir, sessionFileData.sitemap!);
+  const urlList = await sitemapParser(sitemapPath);
+  if (!urlList) return { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig };
+
+  for await (const pageUrl of urlList) {
+    const htmlFilePath = decodeURIComponent(
+      path.join(siteConfig.outDir, pageUrl.replace(siteConfig.siteUrl, ""), "index.html"),
+    );
+    const pageTitle = await htmlTitleParser(htmlFilePath);
+    const pageContent = await htmlContentParser(htmlFilePath);
+
+    sessionSummary.items.push({
+      title: pageTitle,
+      link: pageUrl,
+    });
+
+    fullContentConfig.sessions.push({
+      title: pageTitle,
+      content: pageContent ?? "",
+    });
+  }
+
+  standardConfig.sessions.push(sessionSummary);
+  fullContentConfig.sessions.push(fullContentSession);
+
+  return { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig };
+};
+
+/**
+ * 处理博客类型的会话文件
+ */
+const processBlogSession = async (
+  sessionFileData: LLMSessionFiles,
+  siteConfig: PluginSiteConfig,
+  standardConfig: LLMStdConfig,
+  fullContentConfig: LLMFullStdConfig,
+): Promise<LLMOutputConfig> => {
+  assert(sessionFileData.type === "blog", `Session ${sessionFileData.docsDir} is not a blog type, skipping processing`);
+
+  const sessionSummary: LLMSession = {
+    sessionName: sessionFileData.docsDir,
+    items: [],
+  };
+  const fullContentSession: LLMFullSessionItem = {
+    title: sessionFileData.docsDir,
+    content: "",
+  };
+
+  const rssFilePath = path.join(siteConfig.outDir, sessionFileData.docsDir, sessionFileData.rss!);
+  const blogEntries = await parseRssItems(rssFilePath);
+
+  for await (const blogEntry of blogEntries) {
+    sessionSummary.items.push({
+      title: blogEntry.title,
+      description: blogEntry.description,
+      link: blogEntry.link,
+    });
+    fullContentSession.content = blogEntry.content ?? "";
+  }
+
+  standardConfig.sessions.push(sessionSummary);
+  fullContentConfig.sessions.push(fullContentSession);
+
+  return { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig };
+};
+
+/**
+ * 处理其他类型的会话文件
+ */
+const processGenericSession = async (
+  sessionFileData: LLMSessionFiles,
+  siteConfig: PluginSiteConfig,
+  buildFilePaths: Set<string>,
+  processedSessionFiles: LLMSessionFiles[],
+  standardConfig: LLMStdConfig,
+  fullContentConfig: LLMFullStdConfig,
+): Promise<LLMOutputConfig> => {
+  const processedSessionFile = await processLLMSessionsFilesWithPatternFilters(sessionFileData, siteConfig);
+  processedSessionFiles.push(processedSessionFile);
+
+  const updatedStandardConfig = await generateLLMStdConfig(
+    standardConfig,
+    buildFilePaths,
+    processedSessionFiles,
+    siteConfig,
+  );
+  const updatedFullContentConfig = await generateLLMFullStdConfig(
+    fullContentConfig,
+    buildFilePaths,
+    processedSessionFiles,
+    siteConfig,
+  );
+
+  return { updatedStandardConfig, updatedFullContentConfig };
+};
+
+/**
+ * 生成并写入LLM文本文件
+ */
+const generateOutputFiles = async (
+  llmConfig: LLMConfig,
+  siteConfig: PluginSiteConfig,
+  standardConfig: LLMStdConfig,
+  fullContentConfig: LLMFullStdConfig,
+): Promise<void> => {
+  const fileNamePrefix = llmConfig.infixName ? `llms-${llmConfig.infixName}` : "llms";
+
+  if (llmConfig.generateLLMsTxt) {
+    const standardContent = standardizeLLMsTxtContent(standardConfig, llmConfig.extraSession);
+    await generateLLMsTxt(siteConfig.outDir, `${fileNamePrefix}.txt`, standardContent);
+  }
+
+  if (llmConfig.generateLLMsFullTxt) {
+    const fullContent = standardizeLLMsFullTxtContent(fullContentConfig);
+    await generateLLMsTxt(siteConfig.outDir, `${fileNamePrefix}-full.txt`, fullContent);
+  }
+};
+
 export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void> => {
-  const { pluginSiteConfig, llmConfigs } = context;
+  const { pluginSiteConfig: siteConfig, llmConfigs } = context;
+  const buildFilePaths = await getAllDocusaurusBuildFilesPaths(siteConfig.outDir);
 
-  for await (const llmConfig of llmConfigs) {
-    // 1. check if generateLLMsTxt or generateLLMsFullTxt is true
-    if (!llmConfig.generateLLMsTxt && !llmConfig.generateLLMsFullTxt) {
+  for await (const currentLLMConfig of llmConfigs) {
+    if (!currentLLMConfig.generateLLMsTxt && !currentLLMConfig.generateLLMsFullTxt) {
       continue;
     }
 
-    // 2. Collect docs files
-    const llmSessionFiles = await collectLLMSessionFiles(pluginSiteConfig.siteDir, llmConfig);
+    const sessionFilesList = await collectLLMSessionFiles(siteConfig.siteDir, currentLLMConfig);
 
-    // 3. judge if docsFiles is empty
-    if (llmSessionFiles.length === 0) {
-      console.warn("No docs files found: ", JSON.stringify(llmConfig));
+    if (sessionFilesList.length === 0) {
+      console.warn("No session files found: ", JSON.stringify(currentLLMConfig));
       continue;
     }
 
-    // 4. Get all build file paths and process index.html
-    const buildFilesPaths = await getAllDocusaurusBuildFilesPaths(pluginSiteConfig.outDir);
+    const { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig } =
+      initializeLLMConfigurations(currentLLMConfig);
+    const processedSessionFiles: LLMSessionFiles[] = [];
 
-    // 5. Process docs files
-    const sessionFiles = [];
+    let currentStandardConfig = standardConfig;
+    let currentFullContentConfig = fullContentConfig;
 
-    let stdConfig: LLMStdConfig = {
-      title: llmConfig.title ?? "",
-      description: llmConfig.description ?? "",
-      summary: llmConfig.summary ?? "",
-      sessions: [],
-    };
-    let llmFullStdConfig: LLMFullStdConfig = {
-      title: llmConfig.title ?? "",
-      description: llmConfig.description ?? "",
-      summary: llmConfig.summary ?? "",
-      sessions: [],
-    };
-    for await (const llmSessionFile of llmSessionFiles) {
-      const sessionItem: LLMSession = {
-        sessionName: llmSessionFile.docsDir,
-        items: [],
-      };
-      const sessionFullItem: LLMFullSessionItem = {
-        title: llmSessionFile.docsDir,
-        content: "",
-      };
-      if (llmSessionFile.type === "docs" && llmSessionFile.sitemap) {
-        const locUrls = await sitemapParser(path.join(pluginSiteConfig.outDir, llmSessionFile.sitemap));
-        if (!locUrls) continue;
-
-        for await (const locUrl of locUrls) {
-          const filePath = decodeURIComponent(
-            path.join(pluginSiteConfig.outDir, locUrl.replace(pluginSiteConfig.siteUrl, ""), "index.html"),
-          );
-          const title = await htmlTitleParser(filePath);
-          const content = await htmlContentParser(filePath);
-          sessionItem.items.push({
-            title: title,
-            link: locUrl,
-          });
-
-          llmFullStdConfig.sessions.push({
-            title: title,
-            content: content ?? "",
-          });
-        }
-
-        stdConfig.sessions.push(sessionItem);
-        llmFullStdConfig.sessions.push(sessionFullItem);
-      } else if (llmSessionFile.type === "blog" && llmSessionFile.rss) {
-        const rssFile = path.join(pluginSiteConfig.outDir, llmSessionFile.docsDir, llmSessionFile.rss);
-        const rssItems = await parseRssItems(rssFile);
-
-        for await (const rssItem of rssItems) {
-          sessionItem.items.push({
-            title: rssItem.title,
-            description: rssItem.description,
-            link: rssItem.link,
-          });
-          sessionFullItem.content = rssItem.content ?? "";
-        }
-
-        stdConfig.sessions.push(sessionItem);
-        llmFullStdConfig.sessions.push(sessionFullItem);
-      } else {
-        const sessionFile = await processLLMSessionsFilesWithPatternFilters(llmSessionFile, pluginSiteConfig);
-        sessionFiles.push(sessionFile);
-        stdConfig = await generateLLMStdConfig(stdConfig, buildFilesPaths, sessionFiles, pluginSiteConfig);
-        llmFullStdConfig = await generateLLMFullStdConfig(
-          llmFullStdConfig,
-          buildFilesPaths,
-          sessionFiles,
-          pluginSiteConfig,
+    for await (const sessionFileData of sessionFilesList) {
+      if (sessionFileData.type === "docs" && sessionFileData.sitemap) {
+        const { updatedStandardConfig, updatedFullContentConfig } = await processDocumentationSession(
+          sessionFileData,
+          siteConfig,
+          currentStandardConfig,
+          currentFullContentConfig,
         );
+        currentStandardConfig = updatedStandardConfig;
+        currentFullContentConfig = updatedFullContentConfig;
+      } else if (sessionFileData.type === "blog" && sessionFileData.rss) {
+        const { updatedStandardConfig, updatedFullContentConfig } = await processBlogSession(
+          sessionFileData,
+          siteConfig,
+          currentStandardConfig,
+          currentFullContentConfig,
+        );
+        currentStandardConfig = updatedStandardConfig;
+        currentFullContentConfig = updatedFullContentConfig;
+      } else {
+        const { updatedStandardConfig, updatedFullContentConfig } = await processGenericSession(
+          sessionFileData,
+          siteConfig,
+          buildFilePaths,
+          processedSessionFiles,
+          currentStandardConfig,
+          currentFullContentConfig,
+        );
+        currentStandardConfig = updatedStandardConfig;
+        currentFullContentConfig = updatedFullContentConfig;
       }
     }
 
-    if (llmConfig.generateLLMsTxt) {
-      const llmsTxtContent = standardizeLLMsTxtContent(stdConfig, llmConfig.extraSession);
-      await generateLLMsTxt(
-        pluginSiteConfig.outDir,
-        llmConfig.infixName ? `llms-${llmConfig.infixName}.txt` : "llms.txt",
-        llmsTxtContent,
-      );
-    }
-
-    if (llmConfig.generateLLMsFullTxt) {
-      const llmsFullTxtContent = standardizeLLMsFullTxtContent(llmFullStdConfig);
-      await generateLLMsTxt(
-        pluginSiteConfig.outDir,
-        llmConfig.infixName ? `llms-${llmConfig.infixName}-full.txt` : "llms-full.txt",
-        llmsFullTxtContent,
-      );
-    }
+    await generateOutputFiles(currentLLMConfig, siteConfig, currentStandardConfig, currentFullContentConfig);
   }
 };
