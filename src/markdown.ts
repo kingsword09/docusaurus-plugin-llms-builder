@@ -78,10 +78,8 @@ export const markdownMetadataParser = async (options: {
   const { type, buildFilesPaths, filePath, removeContentTitle, siteConfig, baseDir, siteUrl, pathPrefix } = options;
   const metadata = await markdownParser(filePath, removeContentTitle ?? false, siteConfig);
   const normalizedPath = path.normalize(path.relative(baseDir, filePath));
-  console.warn("QAQ normalizedPath: ", normalizedPath);
   // Convert .md extension to appropriate path
   const linkPathBase = normalizedPath.replace(/\.mdx?$/, "");
-  console.warn("QAQ linkPathBase: ", linkPathBase);
 
   // Handle cases where the file name matches its parent directory name
   const parts = linkPathBase.split("/");
