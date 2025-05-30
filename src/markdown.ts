@@ -106,31 +106,40 @@ export const markdownMetadataParser = async (options: {
   }
 
   let finalLinkPath = linkPath;
-  if (type === "blog") {
-    if (metadata.frontMatter.slug) {
-      finalLinkPath = metadata.frontMatter.slug as string;
-    } else {
-      const dateMatch = linkPath.match(/(\d{4})-(\d{2})-(\d{2})/);
-      if (dateMatch) {
-        // Check if the date is more than a year old
-        const currentDate = new Date();
-        const postDate = new Date(parseInt(dateMatch[1]!), parseInt(dateMatch[2]!) - 1, parseInt(dateMatch[3]!));
-        const oneYearAgo = new Date();
-        oneYearAgo.setFullYear(currentDate.getFullYear() - 1);
+  if (metadata.frontMatter.slug) {
+    finalLinkPath = metadata.frontMatter.slug as string;
+  }
 
-        if (postDate < oneYearAgo) {
-          // If post is older than a year, remove the date from the path
-          finalLinkPath = linkPath.replace(/\d{4}-\d{2}-\d{2}-/, "");
-        } else {
-          // Otherwise, keep the date in YYYY/MM/DD format
-          finalLinkPath = linkPath.replace(/(\d{4})-(\d{2})-(\d{2})-/, "$1/$2/$3");
-        }
+  if (type === "blog") {
+    const dateMatch = linkPath.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (dateMatch) {
+      // Check if the date is more than a year old
+      const currentDate = new Date();
+      const postDate = new Date(parseInt(dateMatch[1]!), parseInt(dateMatch[2]!) - 1, parseInt(dateMatch[3]!));
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(currentDate.getFullYear() - 1);
+
+      if (postDate < oneYearAgo) {
+        // If post is older than a year, remove the date from the path
+        finalLinkPath = linkPath.replace(/\d{4}-\d{2}-\d{2}-/, "");
+      } else {
+        // Otherwise, keep the date in YYYY/MM/DD format
+        finalLinkPath = linkPath.replace(/(\d{4})-(\d{2})-(\d{2})-/, "$1/$2/$3");
       }
     }
+  } else {
+    // Remove leading multiple number prefix patterns
+    finalLinkPath = finalLinkPath.replace(/^(\d{1,2})-/, "");
   }
 
   // Find the best match in the buildFilesPaths set
-  finalLinkPath = findBestMatch(path.join(pathPrefix ?? "", finalLinkPath), buildFilesPaths);
+  finalLinkPath =
+    finalLinkPath === "/"
+      ? ""
+      : // If path exists without pathPrefix, return directly
+        buildFilesPaths.has(finalLinkPath)
+        ? finalLinkPath
+        : findBestMatch(path.join(pathPrefix ?? "", finalLinkPath), buildFilesPaths);
 
   const link = new URL(finalLinkPath, siteUrl).toString();
 
@@ -193,7 +202,13 @@ export const findBestMatch = (
   // Convert Set to Array for Fuse.js
   const haystackArray = Array.from(haystack);
   const fuse = new Fuse(haystackArray, options);
-  const results = fuse.search(needle);
+  const results = fuse.search(needle).sort((a, b) => {
+    // Sort by score ascending (lower is better) and refIndex descending
+    if (a.score === b.score) {
+      return b.refIndex - a.refIndex;
+    }
+    return (a.score ?? 0) - (b.score ?? 0);
+  });
 
   // Return the best match if any found
   if (results.length > 0) {

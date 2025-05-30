@@ -69,6 +69,18 @@ export const processLLMSessionsFilesWithPatternFilters = async (
   // Filter files based on include patterns
   let filteredFiles = docsFiles;
 
+  if (llmSessionFiles.type === "blog") {
+    // Sort blog files by date in path (YYYY-mm-dd format)
+    filteredFiles = filteredFiles.sort((a, b) => {
+      const dateRegex = /(\d{4}-\d{2}-\d{2})/;
+      const dateA = a.match(dateRegex)?.[0] || "";
+      const dateB = b.match(dateRegex)?.[0] || "";
+
+      // Sort in descending order (newest first)
+      return dateB.localeCompare(dateA);
+    });
+  }
+
   let filesToProcess: string[] = [];
   if (patterns) {
     if (Array.isArray(patterns.includePatterns) && patterns.includePatterns.length > 0) {
@@ -186,7 +198,10 @@ export const getAllDocusaurusBuildFilesPaths = async (outDir: string): Promise<S
       const fullPath = path.join(outDir, file.toString());
       const stat = await fs.stat(fullPath);
       if (stat.isFile()) {
-        existingPaths.add(file.endsWith("index.html") ? file.replace("/index.html", "") : file);
+        console.warn("Found file: ", file, file.endsWith("index.html"));
+        existingPaths.add(
+          file.endsWith("index.html") ? (file === "index.html" ? "/" : file.replace("/index.html", "")) : file,
+        );
       }
     }
   } catch (error) {
