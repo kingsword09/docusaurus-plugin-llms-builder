@@ -4,6 +4,11 @@ import { parseMarkdownFile } from "@docusaurus/utils";
 import fs from "fs/promises";
 import Fuse, { type IFuseOptions } from "fuse.js";
 import path from "path";
+import rehypeParse from "rehype-parse";
+import rehypeRemark from "rehype-remark";
+import remarkGfm from "remark-gfm";
+import remarkStringify from "remark-stringify";
+import { unified } from "unified";
 
 import type { DocsInfo, LLMDocsType } from "./types";
 
@@ -72,12 +77,18 @@ export const markdownMetadataParser = async (options: {
   siteConfig: DocusaurusConfig;
   baseDir: string;
   siteUrl: string;
+  outDir: string;
   pathPrefix?: string;
   removeContentTitle?: boolean;
 }): Promise<DocsInfo> => {
-  const { type, buildFilesPaths, filePath, removeContentTitle, siteConfig, baseDir, siteUrl, pathPrefix } = options;
+  const { type, buildFilesPaths, filePath, removeContentTitle, siteConfig, baseDir, siteUrl, outDir, pathPrefix } =
+    options;
   const metadata = await markdownParser(filePath, removeContentTitle ?? false, siteConfig);
   const normalizedPath = path.normalize(path.relative(baseDir, filePath));
+  let isMdx = false;
+  if (normalizedPath.endsWith(".mdx")) {
+    isMdx = true;
+  }
   // Convert .md extension to appropriate path
   const linkPathBase = normalizedPath.replace(/\.mdx?$/, "");
 
@@ -130,6 +141,7 @@ export const markdownMetadataParser = async (options: {
     finalLinkPath = finalLinkPath.replace(/^(\d{1,2})-/, "");
   }
 
+  let content = metadata.content;
   // Find the best match in the buildFilesPaths set
   finalLinkPath =
     finalLinkPath === "/"
@@ -138,6 +150,22 @@ export const markdownMetadataParser = async (options: {
         buildFilesPaths.has(finalLinkPath)
         ? finalLinkPath
         : findBestMatch(path.join(pathPrefix ?? "", finalLinkPath), buildFilesPaths);
+
+  // For MDX documents, we need to parse components by converting the compiled HTML back to markdown
+  if (isMdx) {
+    try {
+      const htmlContent = await fs.readFile(path.join(outDir, finalLinkPath, "index.html"), "utf8");
+      const file = await unified()
+        .use(rehypeParse)
+        .use(remarkGfm)
+        .use(rehypeRemark)
+        .use(remarkStringify)
+        .process(htmlContent);
+      content = String(file);
+    } catch (error) {
+      console.warn(`Failed to parse MDX HTML content for file: ${filePath}`, error);
+    }
+  }
 
   const link = new URL(finalLinkPath, siteUrl).toString();
 
@@ -151,7 +179,7 @@ export const markdownMetadataParser = async (options: {
     title,
     description,
     summary: metadata.excerpt,
-    content: metadata.content,
+    content: content,
     link,
   } satisfies DocsInfo;
 };

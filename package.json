@@ -37,7 +37,12 @@
   "dependencies": {
     "@docusaurus/utils": "^3.8.0",
     "fuse.js": "^7.1.0",
-    "minimatch": "^10.0.1"
+    "minimatch": "^10.0.1",
+    "rehype-parse": "^9.0.1",
+    "rehype-remark": "^10.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-stringify": "^11.0.0",
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "@docusaurus/types": "^3.0.0",

@@ -67,6 +67,7 @@ export const generateLLMStdConfig = async (
         siteConfig: pluginSiteConfig.siteConfig,
         baseDir: path.join(pluginSiteConfig.siteDir, llmSessionFile.docsDir),
         siteUrl: pluginSiteConfig.siteUrl,
+        outDir: pluginSiteConfig.outDir,
         pathPrefix: llmSessionFile.docsDir,
         removeContentTitle: true,
       });
@@ -110,6 +111,7 @@ export const generateLLMFullStdConfig = async (
         siteConfig: pluginSiteConfig.siteConfig,
         baseDir: path.join(pluginSiteConfig.siteDir, llmSessionFile.docsDir),
         siteUrl: pluginSiteConfig.siteUrl,
+        outDir: pluginSiteConfig.outDir,
         pathPrefix: llmSessionFile.docsDir,
         removeContentTitle: true,
       });
