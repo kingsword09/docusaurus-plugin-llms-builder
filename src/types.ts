@@ -14,6 +14,13 @@ export type DocsInfo = {
   link: string;
 };
 
+export type RssItem = {
+  title: string;
+  description: string;
+  content: string;
+  link: string;
+};
+
 export type PluginSiteConfig = {
   version: string;
   outDir: string;

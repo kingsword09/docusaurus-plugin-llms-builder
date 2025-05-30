@@ -1,11 +1,12 @@
 import { XMLParser } from "fast-xml-parser";
 import fs from "node:fs/promises";
-import path from "node:path";
 import rehypeParse from "rehype-parse";
 import rehypeRemark from "rehype-remark";
 import remarkGfm from "remark-gfm";
 import remarkStringify from "remark-stringify";
 import { unified } from "unified";
+
+import type { RssItem } from "./types";
 
 /**
  * Parse sitemap.xml and extract URLs
@@ -20,7 +21,7 @@ export const sitemapParser = async (filePath: string): Promise<string[] | null> 
   });
 
   const data = parser.parse(await fs.readFile(filePath, { encoding: "utf-8" }));
-  console.warn("QAQ data", JSON.stringify(data.urlset.url));
+
   if (Array.isArray(data?.urlset?.url) && data.urlset.url.length > 0) {
     const locUrls: string[] = data.urlset.url.map((url: { loc: string[] }) => url.loc.pop());
     return locUrls;
@@ -34,46 +35,17 @@ export const sitemapParser = async (filePath: string): Promise<string[] | null> 
  * @returns Parsed title
  */
 export const htmlTitleParser = async (filePath: string): Promise<string> => {
-  const html = await fs.readFile(filePath, "utf8");
-  const options = {
-    ignoreAttributes: false,
-    attributeNamePrefix: "@_",
-    textNodeName: "#text",
-    parseTagValue: true,
-    parseAttributeValue: true,
-    trimValues: true,
-  };
+  const htmlString = await fs.readFile(filePath, "utf8");
+  const titleRegex = /<title[^>]*?>([\s\S]*?)<\/title>/i;
+  const match = htmlString.match(titleRegex);
 
-  const parser = new XMLParser(options);
-  let jsonObj = null;
-  try {
-    jsonObj = parser.parse(html);
-  } catch (error) {
-    console.error("Error parsing HTML with fast-xml-parser:", error);
+  if (match && match[1] !== undefined) {
+    return match[1].trim();
+  } else {
+    const normalizedPath = filePath.replace(/\\/g, "/");
+    const parts = normalizedPath.split("/");
+    return parts[-1] ?? filePath;
   }
-
-  if (jsonObj) {
-    let pageTitle = null;
-    try {
-      if (jsonObj.html && jsonObj.html.head && jsonObj.html.head.title) {
-        if (typeof jsonObj.html.head.title === "string") {
-          pageTitle = jsonObj.html.head.title;
-        } else if (jsonObj.html.head.title["#text"]) {
-          pageTitle = jsonObj.html.head.title["#text"];
-        } else {
-          pageTitle = jsonObj.html.head.title;
-        }
-      }
-    } catch (e) {
-      console.error("Could not extract title using expected path:", e);
-    }
-
-    if (pageTitle) {
-      return pageTitle;
-    }
-  }
-
-  return path.dirname(filePath);
 };
 
 /**
@@ -81,9 +53,7 @@ export const htmlTitleParser = async (filePath: string): Promise<string> => {
  * @param filePath - Path to the RSS XML file.
  * @returns An array of objects, each containing title, description, and content.
  */
-export const parseRssItems = async (
-  filePath: string,
-): Promise<{ title: string; description: string; content: string }[]> => {
+export const parseRssItems = async (filePath: string): Promise<RssItem[]> => {
   const xmlContent = await fs.readFile(filePath, { encoding: "utf-8" });
 
   const parser = new XMLParser({
@@ -102,13 +72,32 @@ export const parseRssItems = async (
     return [];
   }
 
-  return items.map((item) => ({
-    title: item.title?.__CDATA || item.title || "",
-    description: item.description?.__CDATA || item.description || "",
-    content: item.encoded?.__CDATA || item.encoded || "", // Use 'encoded' for content:encoded
-  }));
+  return items.map((item) => {
+    let content = item.encoded?.__CDATA || item.encoded || "";
+
+    if (content) {
+      const file = unified()
+        .use(rehypeParse)
+        .use(remarkGfm)
+        .use(rehypeRemark)
+        .use(remarkStringify)
+        .processSync(content);
+      content = String(file);
+    }
+    return {
+      title: item.title?.__CDATA || item.title || "",
+      description: item.description?.__CDATA || item.description || "",
+      content: content,
+      link: item.link || "",
+    };
+  });
 };
 
+/**
+ * Parse HTML content from a file
+ * @param filePath - Path to the HTML file
+ * @returns Parsed content
+ */
 export const htmlContentParser = async (filePath: string): Promise<string | null> => {
   try {
     const htmlContent = await fs.readFile(filePath, "utf8");
