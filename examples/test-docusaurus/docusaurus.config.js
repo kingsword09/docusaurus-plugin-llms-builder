@@ -38,7 +38,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
                 {
                   type: "blog",
                   docsDir: "blog",
-                  rss: "rss.xml",
+                  rss: "atom.xml",
                 },
               ],
 

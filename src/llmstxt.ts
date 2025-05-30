@@ -233,7 +233,6 @@ export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void>
       };
       if (llmSessionFile.type === "docs" && llmSessionFile.sitemap) {
         const locUrls = await sitemapParser(path.join(pluginSiteConfig.outDir, llmSessionFile.sitemap));
-        console.warn("QAQ locUrls", locUrls);
         if (!locUrls) continue;
 
         for await (const locUrl of locUrls) {
@@ -241,9 +240,7 @@ export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void>
             path.join(pluginSiteConfig.outDir, locUrl.replace(pluginSiteConfig.siteUrl, ""), "index.html"),
           );
           const title = await htmlTitleParser(filePath);
-          console.warn("QAQ title", title);
           const content = await htmlContentParser(filePath);
-          console.warn("QAQ content", content);
           sessionItem.items.push({
             title: title,
             link: locUrl,
@@ -254,7 +251,6 @@ export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void>
             content: content ?? "",
           });
         }
-        console.warn("sessionItem", sessionItem);
 
         stdConfig.sessions.push(sessionItem);
         llmFullStdConfig.sessions.push(sessionFullItem);

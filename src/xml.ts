@@ -64,8 +64,7 @@ export const parseRssItems = async (filePath: string): Promise<RssItem[]> => {
   });
 
   const parsedData = parser.parse(xmlContent);
-
-  const items = parsedData?.rss?.channel?.item;
+  const items = parsedData?.rss?.channel?.item ?? parsedData?.feed?.entry;
 
   if (!Array.isArray(items)) {
     console.error("Could not find RSS items in the provided XML file.");
@@ -73,7 +72,7 @@ export const parseRssItems = async (filePath: string): Promise<RssItem[]> => {
   }
 
   return items.map((item) => {
-    let content = item.encoded?.__CDATA || item.encoded || "";
+    let content = item.encoded?.__CDATA || item.encoded || item.content || "";
 
     if (content) {
       const file = unified()
@@ -86,9 +85,9 @@ export const parseRssItems = async (filePath: string): Promise<RssItem[]> => {
     }
     return {
       title: item.title?.__CDATA || item.title || "",
-      description: item.description?.__CDATA || item.description || "",
+      description: item.description?.__CDATA || item.description || item.summary || "",
       content: content,
-      link: item.link || "",
+      link: item.link || item.id || "",
     };
   });
 };
