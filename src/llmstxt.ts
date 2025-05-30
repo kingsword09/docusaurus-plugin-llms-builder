@@ -7,7 +7,7 @@ import {
   processLLMSessionsFilesWithPatternFilters,
 } from "./docs";
 import { markdownMetadataParser } from "./markdown";
-import type { ExtraSession, LLMConfig, LLMSessionFiles, PluginContext, PluginSiteConfig } from "./types";
+import type { ExtraSession, LLMSessionFiles, PluginContext, PluginSiteConfig } from "./types";
 import { htmlContentParser, htmlTitleParser, parseRssItems, sitemapParser } from "./xml";
 
 type LLMSessionItem = {
@@ -41,20 +41,11 @@ type LLMFullStdConfig = {
 };
 
 export const generateLLMStdConfig = async (
+  stdConfig: LLMStdConfig,
   buildFilesPaths: Set<string>,
   llmSessionFiles: LLMSessionFiles[],
-  llmConfig: LLMConfig,
   pluginSiteConfig: PluginSiteConfig,
 ): Promise<LLMStdConfig> => {
-  const { title, description, summary } = llmConfig;
-
-  const stdConfig: LLMStdConfig = {
-    title: title ?? "",
-    description: description ?? "",
-    summary: summary ?? "",
-    sessions: [],
-  };
-
   for await (const llmSessionFile of llmSessionFiles) {
     const session: LLMSession = {
       sessionName: llmSessionFile.docsDir,
@@ -89,20 +80,11 @@ export const generateLLMStdConfig = async (
 };
 
 export const generateLLMFullStdConfig = async (
+  stdFullConfig: LLMFullStdConfig,
   buildFilesPaths: Set<string>,
   llmSessionFiles: LLMSessionFiles[],
-  llmConfig: LLMConfig,
   pluginSiteConfig: PluginSiteConfig,
 ): Promise<LLMFullStdConfig> => {
-  const { title, description, summary } = llmConfig;
-
-  const stdFullConfig: LLMFullStdConfig = {
-    title: title ?? "",
-    description: description ?? "",
-    summary: summary ?? "",
-    sessions: [],
-  };
-
   for await (const llmSessionFile of llmSessionFiles) {
     for await (const filePath of llmSessionFile.docsFiles) {
       const { title, content } = await markdownMetadataParser({
@@ -251,6 +233,7 @@ export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void>
       };
       if (llmSessionFile.type === "docs" && llmSessionFile.sitemap) {
         const locUrls = await sitemapParser(path.join(pluginSiteConfig.outDir, llmSessionFile.sitemap));
+        console.warn("QAQ locUrls", locUrls);
         if (!locUrls) continue;
 
         for await (const locUrl of locUrls) {
@@ -258,7 +241,9 @@ export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void>
             path.join(pluginSiteConfig.outDir, locUrl.replace(pluginSiteConfig.siteUrl, ""), "index.html"),
           );
           const title = await htmlTitleParser(filePath);
+          console.warn("QAQ title", title);
           const content = await htmlContentParser(filePath);
+          console.warn("QAQ content", content);
           sessionItem.items.push({
             title: title,
             link: locUrl,
@@ -269,6 +254,7 @@ export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void>
             content: content ?? "",
           });
         }
+        console.warn("sessionItem", sessionItem);
 
         stdConfig.sessions.push(sessionItem);
         llmFullStdConfig.sessions.push(sessionFullItem);
@@ -290,8 +276,13 @@ export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void>
       } else {
         const sessionFile = await processLLMSessionsFilesWithPatternFilters(llmSessionFile, pluginSiteConfig);
         sessionFiles.push(sessionFile);
-        stdConfig = await generateLLMStdConfig(buildFilesPaths, sessionFiles, llmConfig, pluginSiteConfig);
-        llmFullStdConfig = await generateLLMFullStdConfig(buildFilesPaths, sessionFiles, llmConfig, pluginSiteConfig);
+        stdConfig = await generateLLMStdConfig(stdConfig, buildFilesPaths, sessionFiles, pluginSiteConfig);
+        llmFullStdConfig = await generateLLMFullStdConfig(
+          llmFullStdConfig,
+          buildFilesPaths,
+          sessionFiles,
+          pluginSiteConfig,
+        );
       }
     }
 
