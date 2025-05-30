@@ -6,8 +6,8 @@ import {
   collectLLMSessionFiles,
   getAllDocusaurusBuildFilesPaths,
   processLLMSessionsFilesWithPatternFilters,
-} from "./docs";
-import { markdownMetadataParser } from "./markdown";
+} from "./files";
+import { markdownMetadataParser } from "./parser";
 import type { ExtraSession, LLMConfig, LLMSessionFiles, PluginContext, PluginSiteConfig } from "./types";
 import { htmlContentParser, htmlTitleParser, parseRssItems, sitemapParser } from "./xml";
 
