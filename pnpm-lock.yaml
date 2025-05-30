@@ -13,6 +13,9 @@ importers:
       "@docusaurus/utils":
         specifier: ^3.8.0
         version: 3.8.0(acorn@8.14.1)(esbuild@0.25.5)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      fast-xml-parser:
+        specifier: ^5.2.3
+        version: 5.2.3
       fuse.js:
         specifier: ^7.1.0
         version: 7.1.0
@@ -3200,6 +3203,11 @@ packages:
     resolution:
       { integrity: sha512-Atfo14OibSv5wAp4VWNsFYE1AchQRTv9cBGWET4pZWHzYshFSS9NQI6I57rdKn9croWVMbYFbLhJ+yJvmZIIHw== }
 
+  fast-xml-parser@5.2.3:
+    resolution:
+      { integrity: sha512-OdCYfRqfpuLUFonTNjvd30rCBZUneHpSQkCqfaeWQ9qrKcl6XlWeDBNVwGb+INAIxRshuN2jF+BE0L6gbBO2mw== }
+    hasBin: true
+
   fastq@1.19.1:
     resolution:
       { integrity: sha512-GwLTyxkCXjXbxqIhTsMI2Nui8huMPtnxg7krajPJAjnEG/iiOS7i+zCtWGZR9G0NBKbXKh6X9m9UIsYX/N6vvQ== }
@@ -6029,6 +6037,10 @@ packages:
     resolution:
       { integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig== }
     engines: { node: ">=8" }
+
+  strnum@2.1.1:
+    resolution:
+      { integrity: sha512-7ZvoFTiCnGxBtDqJ//Cu6fWtZtc7Y3x+QOirG15wztbdngGSkht27o2pyGWrVy0b4WAy3jbKmnoK6g5VlVNUUw== }
 
   style-to-js@1.1.16:
     resolution:
@@ -9642,6 +9654,10 @@ snapshots:
 
   fast-uri@3.0.6: {}
 
+  fast-xml-parser@5.2.3:
+    dependencies:
+      strnum: 2.1.1
+
   fastq@1.19.1:
     dependencies:
       reusify: 1.1.0
@@ -12428,6 +12444,8 @@ snapshots:
   strip-json-comments@2.0.1: {}
 
   strip-json-comments@3.1.1: {}
+
+  strnum@2.1.1: {}
 
   style-to-js@1.1.16:
     dependencies:

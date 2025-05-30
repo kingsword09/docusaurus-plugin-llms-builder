@@ -8,6 +8,7 @@ import {
 } from "./docs";
 import { markdownMetadataParser } from "./markdown";
 import type { ExtraSession, LLMConfig, LLMSessionFiles, PluginContext, PluginSiteConfig } from "./types";
+import { htmlContentParser, htmlTitleParser, parseRssItems, sitemapParser } from "./xml";
 
 type LLMSessionItem = {
   title: string;
@@ -226,12 +227,75 @@ export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void>
 
     // 5. Process docs files
     const sessionFiles = [];
+
+    let stdConfig: LLMStdConfig = {
+      title: llmConfig.title ?? "",
+      description: llmConfig.description ?? "",
+      summary: llmConfig.summary ?? "",
+      sessions: [],
+    };
+    let llmFullStdConfig: LLMFullStdConfig = {
+      title: llmConfig.title ?? "",
+      description: llmConfig.description ?? "",
+      summary: llmConfig.summary ?? "",
+      sessions: [],
+    };
     for await (const llmSessionFile of llmSessionFiles) {
-      const sessionFile = await processLLMSessionsFilesWithPatternFilters(llmSessionFile, pluginSiteConfig);
-      sessionFiles.push(sessionFile);
+      const sessionItem: LLMSession = {
+        sessionName: llmSessionFile.docsDir,
+        items: [],
+      };
+      const sessionFullItem: LLMFullSessionItem = {
+        title: llmSessionFile.docsDir,
+        content: "",
+      };
+      if (llmSessionFile.type === "docs" && llmSessionFile.sitemap) {
+        const locUrls = await sitemapParser(path.join(pluginSiteConfig.outDir, llmSessionFile.sitemap));
+        if (!locUrls) continue;
+
+        for await (const locUrl of locUrls) {
+          const filePath = decodeURIComponent(
+            path.join(pluginSiteConfig.outDir, locUrl.replace(pluginSiteConfig.siteUrl, ""), "index.html"),
+          );
+          const title = await htmlTitleParser(filePath);
+          const content = await htmlContentParser(filePath);
+          sessionItem.items.push({
+            title: title,
+            link: locUrl,
+          });
+
+          llmFullStdConfig.sessions.push({
+            title: title,
+            content: content ?? "",
+          });
+        }
+
+        stdConfig.sessions.push(sessionItem);
+        llmFullStdConfig.sessions.push(sessionFullItem);
+      } else if (llmSessionFile.type === "blog" && llmSessionFile.rss) {
+        const rssFile = path.join(pluginSiteConfig.outDir, llmSessionFile.docsDir, llmSessionFile.rss);
+        const rssItems = await parseRssItems(rssFile);
+
+        for await (const rssItem of rssItems) {
+          sessionItem.items.push({
+            title: rssItem.title,
+            description: rssItem.description,
+            link: rssItem.link,
+          });
+          sessionFullItem.content = rssItem.content ?? "";
+        }
+
+        stdConfig.sessions.push(sessionItem);
+        llmFullStdConfig.sessions.push(sessionFullItem);
+      } else {
+        const sessionFile = await processLLMSessionsFilesWithPatternFilters(llmSessionFile, pluginSiteConfig);
+        sessionFiles.push(sessionFile);
+        stdConfig = await generateLLMStdConfig(buildFilesPaths, sessionFiles, llmConfig, pluginSiteConfig);
+        llmFullStdConfig = await generateLLMFullStdConfig(buildFilesPaths, sessionFiles, llmConfig, pluginSiteConfig);
+      }
     }
+
     if (llmConfig.generateLLMsTxt) {
-      const stdConfig = await generateLLMStdConfig(buildFilesPaths, sessionFiles, llmConfig, pluginSiteConfig);
       const llmsTxtContent = standardizeLLMsTxtContent(stdConfig, llmConfig.extraSession);
       await generateLLMsTxt(
         pluginSiteConfig.outDir,
@@ -241,12 +305,6 @@ export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void>
     }
 
     if (llmConfig.generateLLMsFullTxt) {
-      const llmFullStdConfig = await generateLLMFullStdConfig(
-        buildFilesPaths,
-        sessionFiles,
-        llmConfig,
-        pluginSiteConfig,
-      );
       const llmsFullTxtContent = standardizeLLMsFullTxtContent(llmFullStdConfig);
       await generateLLMsTxt(
         pluginSiteConfig.outDir,

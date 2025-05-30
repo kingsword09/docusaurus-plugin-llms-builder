@@ -4,13 +4,9 @@ import { parseMarkdownFile } from "@docusaurus/utils";
 import fs from "fs/promises";
 import Fuse, { type IFuseOptions } from "fuse.js";
 import path from "path";
-import rehypeParse from "rehype-parse";
-import rehypeRemark from "rehype-remark";
-import remarkGfm from "remark-gfm";
-import remarkStringify from "remark-stringify";
-import { unified } from "unified";
 
 import type { DocsInfo, LLMDocsType } from "./types";
+import { htmlContentParser } from "./xml";
 
 /**
  * parse markdown file title
@@ -153,17 +149,9 @@ export const markdownMetadataParser = async (options: {
 
   // For MDX documents, we need to parse components by converting the compiled HTML back to markdown
   if (isMdx) {
-    try {
-      const htmlContent = await fs.readFile(path.join(outDir, finalLinkPath, "index.html"), "utf8");
-      const file = await unified()
-        .use(rehypeParse)
-        .use(remarkGfm)
-        .use(rehypeRemark)
-        .use(remarkStringify)
-        .process(htmlContent);
-      content = String(file);
-    } catch (error) {
-      console.warn(`Failed to parse MDX HTML content for file: ${filePath}`, error);
+    const mdxContent = await htmlContentParser(path.join(outDir, finalLinkPath, "index.html"));
+    if (mdxContent) {
+      content = mdxContent;
     }
   }
 
