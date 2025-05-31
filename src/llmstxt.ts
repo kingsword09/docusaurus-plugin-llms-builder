@@ -145,25 +145,27 @@ export const standardizeLLMsTxtContent = (llmStdConfig: LLMStdConfig, extraSessi
     .filter(Boolean)
     .join("\n\n");
 
-  // Generate sessions content
-  const sessionsContent = llmStdConfig.sessions
-    .map((session) => {
-      const sessionHeader = `\n\n## ${session.sessionName}\n\n`;
-      const sessionItems = session.items
-        .map((item) => {
-          const baseLink = `- [${item.title}](${item.link})`;
-          return item.description ? `${baseLink}: ${item.description}` : `${baseLink}`;
-        })
-        .join("\n");
+  // Generate Table of Contents
+  const sessionsContent =
+    `\n\n## Table of Contents` +
+    llmStdConfig.sessions
+      .map((session) => {
+        const sessionHeader = `\n\n### ${session.sessionName}\n\n`;
+        const sessionItems = session.items
+          .map((item) => {
+            const baseLink = `- [${item.title}](${item.link})`;
+            return item.description ? `${baseLink}: ${item.description}` : `${baseLink}`;
+          })
+          .join("\n");
 
-      return sessionHeader + sessionItems;
-    })
-    .join("");
+        return sessionHeader + sessionItems;
+      })
+      .join("");
 
   // Generate extra links
   let extraContent = "";
   if (extraSession) {
-    const extraLinksHeader = `\n\n## ${extraSession.sessionName}\n\n`;
+    const extraLinksHeader = `\n\n### ${extraSession.sessionName}\n\n`;
     extraContent =
       extraLinksHeader +
       extraSession.extraLinks
@@ -191,9 +193,9 @@ export const standardizeLLMsFullTxtContent = (llmFullStdConfig: LLMFullStdConfig
   // Generate sessions content
   const sessionsContent = llmFullStdConfig.sessions
     .map((session) => {
-      const sessionHeader = `\n\n## ${session.title}\n`;
-      const sessionItems = `\n${session.content}\n`;
-      return sessionHeader + sessionItems + "\n---\n";
+      const sessionHeader = `\n\n---\nurl: ${session.link}\n---\n## ${session.title}\n`;
+      const sessionItems = `\n${session.content.trim()}\n`;
+      return sessionHeader + sessionItems + "\n---";
     })
     .join("");
 
@@ -291,6 +293,7 @@ const processDocumentationSession = async (
 
     if (fullContentConfig.processedUrls.has(pageUrl)) continue;
     fullContentConfig.processedUrls.add(pageUrl);
+    console.warn(`QAQ Processing ${pageUrl}`);
     fullContentConfig.sessions.push({
       title: pageTitle,
       link: pageUrl,
