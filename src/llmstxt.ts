@@ -242,7 +242,7 @@ const processDocumentationSession = async (
   assert(sessionFileData.type === "docs", `Session ${sessionFileData.docsDir} is not a docs type, skipping processing`);
 
   const sessionItem: LLMSession = {
-    sessionName: sessionFileData.docsDir,
+    sessionName: sessionFileData.sessionName ?? sessionFileData.docsDir,
     source: "sitemap",
     items: [],
   };
@@ -317,7 +317,7 @@ const processBlogSession = async (
   const { ignorePatterns, includePatterns, orderPatterns, includeUnmatched } = sessionFileData.patterns ?? {};
 
   const sessionItem: LLMSession = {
-    sessionName: sessionFileData.docsDir,
+    sessionName: sessionFileData.sessionName ?? sessionFileData.docsDir,
     source: "rss",
     items: [],
   };

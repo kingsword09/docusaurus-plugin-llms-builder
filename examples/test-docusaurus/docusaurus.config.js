@@ -30,6 +30,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
                 {
                   type: "docs",
                   docsDir: "docs",
+                  sessionName: "Docs",
                   sitemap: "sitemap.xml",
                   patterns: {
                     ignorePatterns: ["**/tutorial-basics/**"],
@@ -41,6 +42,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
                 {
                   type: "blog",
                   docsDir: "blog",
+                  sessionName: "Blog",
                   rss: "atom.xml",
                   patterns: {
                     ignorePatterns: ["**/mdx-blog-post"],
@@ -62,6 +64,21 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
                   },
                 ],
               },
+            },
+            {
+              title: "Title 2",
+              description: "Optional description goes here",
+              summary: "Optional details go here",
+              infixName: "blog",
+              sessions: [
+                {
+                  type: "blog",
+                  docsDir: "blog",
+                  sessionName: "Blog",
+                  // rss: "atom.xml",
+                },
+              ],
+              generateLLMsTxt: true,
             },
           ],
         }),

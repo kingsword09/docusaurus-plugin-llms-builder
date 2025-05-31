@@ -88,6 +88,7 @@ export type ContentType = "docs" | "blog";
 export type ContentSession =
   | {
       type: "docs";
+      sessionName?: string;
       docsDir: string;
       /**
        * Optional: Configuration for file patterns and traversal method
@@ -101,6 +102,7 @@ export type ContentSession =
     }
   | {
       type: "blog";
+      sessionName?: string;
       docsDir: string;
       /**
        * Optional: Configuration for file patterns and traversal method
