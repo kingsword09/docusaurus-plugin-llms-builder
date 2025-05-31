@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 import remarkStringify from "remark-stringify";
 import { unified } from "unified";
 
-import type { RssItem } from "./types";
+import type { RSSFeedItem } from "./types";
 
 /**
  * Parse sitemap.xml and extract URLs
@@ -53,7 +53,7 @@ export const htmlTitleParser = async (filePath: string): Promise<string> => {
  * @param filePath - Path to the RSS XML file.
  * @returns An array of objects, each containing title, description, and content.
  */
-export const parseRssItems = async (filePath: string): Promise<RssItem[]> => {
+export const parseRssItems = async (filePath: string): Promise<RSSFeedItem[]> => {
   const xmlContent = await fs.readFile(filePath, { encoding: "utf-8" });
 
   const parser = new XMLParser({

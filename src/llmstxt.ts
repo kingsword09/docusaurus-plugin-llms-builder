@@ -8,7 +8,7 @@ import {
   processLLMSessionsFilesWithPatternFilters,
 } from "./files";
 import { markdownMetadataParser } from "./parser";
-import type { ExtraSession, LLMConfig, LLMSessionFiles, PluginContext, PluginSiteConfig } from "./types";
+import type { AdditionalSession, BuilderContext, ContentConfiguration, SessionFiles, SiteConfiguration } from "./types";
 import { htmlContentParser, htmlTitleParser, parseRssItems, sitemapParser } from "./xml";
 
 type LLMSessionItem = {
@@ -46,8 +46,8 @@ type LLMOutputConfig = { updatedStandardConfig: LLMStdConfig; updatedFullContent
 export const generateLLMStdConfig = async (
   stdConfig: LLMStdConfig,
   buildFilesPaths: Set<string>,
-  llmSessionFiles: LLMSessionFiles[],
-  pluginSiteConfig: PluginSiteConfig,
+  llmSessionFiles: SessionFiles[],
+  pluginSiteConfig: SiteConfiguration,
 ): Promise<LLMStdConfig> => {
   for await (const llmSessionFile of llmSessionFiles) {
     const session: LLMSession = {
@@ -85,8 +85,8 @@ export const generateLLMStdConfig = async (
 export const generateLLMFullStdConfig = async (
   stdFullConfig: LLMFullStdConfig,
   buildFilesPaths: Set<string>,
-  llmSessionFiles: LLMSessionFiles[],
-  pluginSiteConfig: PluginSiteConfig,
+  llmSessionFiles: SessionFiles[],
+  pluginSiteConfig: SiteConfiguration,
 ): Promise<LLMFullStdConfig> => {
   for await (const llmSessionFile of llmSessionFiles) {
     for await (const filePath of llmSessionFile.docsFiles) {
@@ -117,7 +117,7 @@ export const generateLLMFullStdConfig = async (
  * @param llmStdConfig
  * @returns
  */
-export const standardizeLLMsTxtContent = (llmStdConfig: LLMStdConfig, extraSession?: ExtraSession): string => {
+export const standardizeLLMsTxtContent = (llmStdConfig: LLMStdConfig, extraSession?: AdditionalSession): string => {
   // Generate Title 、Description 、Details
   const headerSection = [`# ${llmStdConfig.title}`, `> ${llmStdConfig.description}`, llmStdConfig.summary]
     .filter(Boolean)
@@ -192,7 +192,7 @@ export const generateLLMsTxt = async (outDir: string, filename: string, content:
 /**
  * 初始化LLM配置对象
  */
-const initializeLLMConfigurations = (config: LLMConfig): LLMOutputConfig => {
+const initializeLLMConfigurations = (config: ContentConfiguration): LLMOutputConfig => {
   return {
     updatedStandardConfig: {
       title: config.title ?? "",
@@ -213,8 +213,8 @@ const initializeLLMConfigurations = (config: LLMConfig): LLMOutputConfig => {
  * 处理文档类型的会话文件
  */
 const processDocumentationSession = async (
-  sessionFileData: LLMSessionFiles,
-  siteConfig: PluginSiteConfig,
+  sessionFileData: SessionFiles,
+  siteConfig: SiteConfiguration,
   standardConfig: LLMStdConfig,
   fullContentConfig: LLMFullStdConfig,
 ): Promise<LLMOutputConfig> => {
@@ -261,8 +261,8 @@ const processDocumentationSession = async (
  * 处理博客类型的会话文件
  */
 const processBlogSession = async (
-  sessionFileData: LLMSessionFiles,
-  siteConfig: PluginSiteConfig,
+  sessionFileData: SessionFiles,
+  siteConfig: SiteConfiguration,
   standardConfig: LLMStdConfig,
   fullContentConfig: LLMFullStdConfig,
 ): Promise<LLMOutputConfig> => {
@@ -299,10 +299,10 @@ const processBlogSession = async (
  * 处理其他类型的会话文件
  */
 const processGenericSession = async (
-  sessionFileData: LLMSessionFiles,
-  siteConfig: PluginSiteConfig,
+  sessionFileData: SessionFiles,
+  siteConfig: SiteConfiguration,
   buildFilePaths: Set<string>,
-  processedSessionFiles: LLMSessionFiles[],
+  processedSessionFiles: SessionFiles[],
   standardConfig: LLMStdConfig,
   fullContentConfig: LLMFullStdConfig,
 ): Promise<LLMOutputConfig> => {
@@ -329,8 +329,8 @@ const processGenericSession = async (
  * 生成并写入LLM文本文件
  */
 const generateOutputFiles = async (
-  llmConfig: LLMConfig,
-  siteConfig: PluginSiteConfig,
+  llmConfig: ContentConfiguration,
+  siteConfig: SiteConfiguration,
   standardConfig: LLMStdConfig,
   fullContentConfig: LLMFullStdConfig,
 ): Promise<void> => {
@@ -347,7 +347,7 @@ const generateOutputFiles = async (
   }
 };
 
-export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void> => {
+export const generateLLMsTxtFlow = async (context: BuilderContext): Promise<void> => {
   const { pluginSiteConfig: siteConfig, llmConfigs } = context;
   const buildFilePaths = await getAllDocusaurusBuildFilesPaths(siteConfig.outDir);
 
@@ -365,7 +365,7 @@ export const generateLLMsTxtFlow = async (context: PluginContext): Promise<void>
 
     const { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig } =
       initializeLLMConfigurations(currentLLMConfig);
-    const processedSessionFiles: LLMSessionFiles[] = [];
+    const processedSessionFiles: SessionFiles[] = [];
 
     let currentStandardConfig = standardConfig;
     let currentFullContentConfig = fullContentConfig;

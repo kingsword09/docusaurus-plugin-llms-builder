@@ -1,7 +1,7 @@
 import type { LoadContext, Plugin } from "@docusaurus/types";
 
 import { generateLLMsTxtFlow } from "./llmstxt";
-import type { PluginContext, PluginOptions } from "./types";
+import type { BuilderContext, PluginOptions } from "./types";
 
 export default function defineDocusaurusPlugins(context: LoadContext, options: PluginOptions): Plugin<void> {
   const { siteConfig, siteDir, outDir, siteVersion } = context;
@@ -9,7 +9,7 @@ export default function defineDocusaurusPlugins(context: LoadContext, options: P
   const siteUrl =
     siteConfig.url + (siteConfig.baseUrl.endsWith("/") ? siteConfig.baseUrl.slice(0, -1) : siteConfig.baseUrl || "");
 
-  const pluginContext: PluginContext = {
+  const pluginContext: BuilderContext = {
     pluginSiteConfig: {
       version: version ?? siteVersion ?? "1.0.0",
       outDir,

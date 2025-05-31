@@ -1,12 +1,14 @@
 import type { DocusaurusConfig } from "@docusaurus/types";
 
-export type ExtraLink = {
+// 外部链接配置
+export type ExternalLink = {
   title: string;
   link: string;
   description?: string;
 };
 
-export type DocsInfo = {
+// 文档信息
+export type DocumentInfo = {
   title: string;
   description?: string;
   summary?: string;
@@ -14,14 +16,16 @@ export type DocsInfo = {
   link: string;
 };
 
-export type RssItem = {
+// RSS条目
+export type RSSFeedItem = {
   title: string;
   description: string;
   content: string;
   link: string;
 };
 
-export type PluginSiteConfig = {
+// 插件站点配置
+export type SiteConfiguration = {
   version: string;
   outDir: string;
   siteDir: string;
@@ -29,12 +33,14 @@ export type PluginSiteConfig = {
   siteUrl: string;
 };
 
-export type PluginContext = {
-  pluginSiteConfig: PluginSiteConfig;
-  llmConfigs: LLMConfig[];
+// 插件上下文
+export type BuilderContext = {
+  pluginSiteConfig: SiteConfiguration;
+  llmConfigs: ContentConfiguration[];
 };
 
-export type LLMPatternsConfig = {
+// 文件模式配置
+export type FilePatternConfiguration = {
   /**
    * Whether to include unmatched files last (default: false)
    */
@@ -57,7 +63,8 @@ export type LLMPatternsConfig = {
   orderPatterns?: string[];
 };
 
-export type LLMHeaderConfig = {
+// 头部配置
+export type HeaderConfiguration = {
   /**
    * Optional: Header title
    */
@@ -72,18 +79,20 @@ export type LLMHeaderConfig = {
   summary?: string;
 };
 
-export type LLMDocsType = "docs" | "blog";
+// 内容类型
+export type ContentType = "docs" | "blog";
+
 /**
- * Configuration for docs type content, supporting sidebar and pattern-based content retrieval
+ * 内容会话配置，支持侧边栏和基于模式的内容检索
  */
-export type LLMSession =
+export type ContentSession =
   | {
       type: "docs";
       docsDir: string;
       /**
        * Optional: Configuration for file patterns and traversal method
        */
-      patterns?: LLMPatternsConfig;
+      patterns?: FilePatternConfiguration;
       /**
        * Optional: Whether to use sitemap for file discovery instead of recursive traversal
        * @default false
@@ -96,7 +105,7 @@ export type LLMSession =
       /**
        * Optional: Configuration for file patterns and traversal method
        */
-      patterns?: LLMPatternsConfig;
+      patterns?: FilePatternConfiguration;
       /**
        * Optional: Whether to use sitemap for file discovery instead of recursive traversal
        * @default false
@@ -104,24 +113,29 @@ export type LLMSession =
       rss?: string;
     };
 
-export type LLMDocsConfig = LLMHeaderConfig & {
-  sessions: LLMSession[];
+// 文档配置
+export type DocumentConfiguration = HeaderConfiguration & {
+  sessions: ContentSession[];
 };
 
-export type LLMSessionFiles = LLMSession & {
+// 会话文件
+export type SessionFiles = ContentSession & {
   docsFiles: string[];
 };
 
-export type LLMSessionFilesItem = LLMDocsConfig & {
-  sessions: LLMSessionFiles[];
+// 会话文件项
+export type SessionFilesItem = DocumentConfiguration & {
+  sessions: SessionFiles[];
 };
 
-export type ExtraSession = {
+// 额外会话
+export type AdditionalSession = {
   sessionName: string;
-  extraLinks: ExtraLink[];
+  extraLinks: ExternalLink[];
 };
 
-export type LLMCommonConfig = {
+// 通用配置
+export type CommonConfiguration = {
   infixName?: string;
   /**
    * Whether to generate llms.txt file (default: true)
@@ -135,17 +149,17 @@ export type LLMCommonConfig = {
   /**
    * Optional: Additional external links or references to include
    */
-  extraSession?: ExtraSession;
+  extraSession?: AdditionalSession;
 };
 
-export type LLMConfig = LLMDocsConfig & LLMCommonConfig;
+// 内容配置
+export type ContentConfiguration = DocumentConfiguration & CommonConfiguration;
 
 /**
- * Plugin options for configuring the LLM builder functionality
- * Defines settings for generating LLM files, directory traversal,
- * and metadata handling across the documentation site
+ * 插件选项，用于配置LLM构建器功能
+ * 定义生成LLM文件、目录遍历和元数据处理的设置
  */
 export type PluginOptions = {
   version: string;
-  llmConfigs: LLMConfig[];
+  llmConfigs: ContentConfiguration[];
 };

@@ -5,7 +5,7 @@ import Fuse, { type IFuseOptions } from "fuse.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import type { DocsInfo, LLMDocsType } from "./types";
+import type { ContentType, DocumentInfo } from "./types";
 import { htmlContentParser } from "./xml";
 
 /**
@@ -67,7 +67,7 @@ export const markdownParser = async (
  * @returns
  */
 export const markdownMetadataParser = async (options: {
-  type: LLMDocsType;
+  type: ContentType;
   buildFilesPaths: Set<string>;
   filePath: string;
   siteConfig: DocusaurusConfig;
@@ -76,7 +76,7 @@ export const markdownMetadataParser = async (options: {
   outDir: string;
   pathPrefix?: string;
   removeContentTitle?: boolean;
-}): Promise<DocsInfo> => {
+}): Promise<DocumentInfo> => {
   const { type, buildFilesPaths, filePath, removeContentTitle, siteConfig, baseDir, siteUrl, outDir, pathPrefix } =
     options;
   const metadata = await markdownParser(filePath, removeContentTitle ?? false, siteConfig);
@@ -169,7 +169,7 @@ export const markdownMetadataParser = async (options: {
     summary: metadata.excerpt,
     content: content,
     link,
-  } satisfies DocsInfo;
+  } satisfies DocumentInfo;
 };
 
 /**

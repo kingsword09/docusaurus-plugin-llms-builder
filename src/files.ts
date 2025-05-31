@@ -2,7 +2,7 @@ import { minimatch } from "minimatch";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import type { LLMConfig, LLMSessionFiles, PluginSiteConfig } from "./types";
+import type { ContentConfiguration, SessionFiles, SiteConfiguration } from "./types";
 
 const collectPatternsDocsFiles = async (
   siteDir: string,
@@ -34,8 +34,11 @@ const collectPatternsDocsFiles = async (
  * @param defaultLLMConfig
  * @returns
  */
-export const collectLLMSessionFiles = async (siteDir: string, llmConfig: LLMConfig): Promise<LLMSessionFiles[]> => {
-  const llmSessionFiles: LLMSessionFiles[] = [];
+export const collectLLMSessionFiles = async (
+  siteDir: string,
+  llmConfig: ContentConfiguration,
+): Promise<SessionFiles[]> => {
+  const llmSessionFiles: SessionFiles[] = [];
 
   for (const session of llmConfig.sessions) {
     const docsFiles = await collectPatternsDocsFiles(siteDir, session.docsDir, session.patterns?.ignorePatterns ?? []);
@@ -48,7 +51,7 @@ export const collectLLMSessionFiles = async (siteDir: string, llmConfig: LLMConf
     llmSessionFiles.push({
       ...session,
       docsFiles,
-    } satisfies LLMSessionFiles);
+    } satisfies SessionFiles);
   }
 
   return llmSessionFiles;
@@ -61,9 +64,9 @@ export const collectLLMSessionFiles = async (siteDir: string, llmConfig: LLMConf
  * @returns
  */
 export const processLLMSessionsFilesWithPatternFilters = async (
-  llmSessionFiles: LLMSessionFiles,
-  pluginSiteConfig: PluginSiteConfig,
-): Promise<LLMSessionFiles> => {
+  llmSessionFiles: SessionFiles,
+  pluginSiteConfig: SiteConfiguration,
+): Promise<SessionFiles> => {
   const { patterns, docsFiles } = llmSessionFiles;
   const { siteDir } = pluginSiteConfig;
   // Filter files based on include patterns
