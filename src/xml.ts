@@ -1,10 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
+import { NodeHtmlMarkdown } from "node-html-markdown";
 import fs from "node:fs/promises";
-import rehypeParse from "rehype-parse";
-import rehypeRemark from "rehype-remark";
-import remarkGfm from "remark-gfm";
-import remarkStringify from "remark-stringify";
-import { unified } from "unified";
 
 import type { RSSFeedItem } from "./types";
 
@@ -75,13 +71,7 @@ export const parseRssItems = async (filePath: string): Promise<RSSFeedItem[]> =>
     let content = item.encoded?.__CDATA || item.encoded || item.content || "";
 
     if (content) {
-      const file = unified()
-        .use(rehypeParse)
-        .use(remarkGfm)
-        .use(rehypeRemark)
-        .use(remarkStringify)
-        .processSync(content);
-      content = String(file);
+      content = NodeHtmlMarkdown.translate(content);
     }
     return {
       title: item.title?.__CDATA || item.title || "",
@@ -100,13 +90,7 @@ export const parseRssItems = async (filePath: string): Promise<RSSFeedItem[]> =>
 export const htmlContentParser = async (filePath: string): Promise<string | null> => {
   try {
     const htmlContent = await fs.readFile(filePath, "utf8");
-    const file = await unified()
-      .use(rehypeParse)
-      .use(remarkGfm)
-      .use(rehypeRemark)
-      .use(remarkStringify)
-      .process(htmlContent);
-    return String(file);
+    return NodeHtmlMarkdown.translate(htmlContent);
   } catch (error) {
     console.warn(`Failed to parse MDX HTML content for file: ${filePath}`, error);
   }
