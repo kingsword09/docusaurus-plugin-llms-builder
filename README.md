@@ -16,12 +16,6 @@ A Docusaurus plugin that generates standardized LLM prompt files (llms.txt and l
 npm install -D docusaurus-plugin-llms-builder
 ```
 
-## Acknowledgments
-
-This project was inspired by [docusaurus-plugin-llms](https://github.com/rachfop/docusaurus-plugin-llms), which provides
-similar functionality for generating LLM training files from Docusaurus documentation. We've built upon their approach
-while adding additional features and customization options.
-
 ## Usage
 
 Add the plugin to your `docusaurus.config.js`:
@@ -140,3 +134,7 @@ module.exports = {
   ],
 };
 ```
+
+## Related Projects
+
+- [docusaurus-plugin-llms](https://github.com/rachfop/docusaurus-plugin-llms)
