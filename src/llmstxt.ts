@@ -293,7 +293,6 @@ const processDocumentationSession = async (
 
     if (fullContentConfig.processedUrls.has(pageUrl)) continue;
     fullContentConfig.processedUrls.add(pageUrl);
-    console.warn(`QAQ Processing ${pageUrl}`);
     fullContentConfig.sessions.push({
       title: pageTitle,
       link: pageUrl,
@@ -445,7 +444,6 @@ export const generateLLMsTxtFlow = async (context: BuilderContext): Promise<void
 
     let { updatedStandardConfig: currentStandardConfig, updatedFullContentConfig: currentFullContentConfig } =
       initializeLLMConfigurations(currentLLMConfig);
-    const processedSessionFiles: SessionFiles[] = [];
 
     for await (const sessionFileData of sessionFilesList) {
       if (sessionFileData.type === "docs" && sessionFileData.sitemap) {
@@ -467,6 +465,7 @@ export const generateLLMsTxtFlow = async (context: BuilderContext): Promise<void
         currentStandardConfig = updatedStandardConfig;
         currentFullContentConfig = updatedFullContentConfig;
       } else {
+        const processedSessionFiles: SessionFiles[] = [];
         const { updatedStandardConfig, updatedFullContentConfig } = await processGenericSession(
           sessionFileData,
           siteConfig,
