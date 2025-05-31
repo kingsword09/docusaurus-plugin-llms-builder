@@ -1,13 +1,13 @@
 import type { DocusaurusConfig } from "@docusaurus/types";
 
-// 外部链接配置
+// External link configuration
 export type ExternalLink = {
   title: string;
   link: string;
   description?: string;
 };
 
-// 文档信息
+// Document information
 export type DocumentInfo = {
   title: string;
   description?: string;
@@ -16,7 +16,7 @@ export type DocumentInfo = {
   link: string;
 };
 
-// RSS条目
+// RSS feed item
 export type RSSFeedItem = {
   title: string;
   description: string;
@@ -24,7 +24,7 @@ export type RSSFeedItem = {
   link: string;
 };
 
-// 插件站点配置
+// Plugin site configuration
 export type SiteConfiguration = {
   version: string;
   outDir: string;
@@ -33,13 +33,13 @@ export type SiteConfiguration = {
   siteUrl: string;
 };
 
-// 插件上下文
+// Plugin context
 export type BuilderContext = {
   pluginSiteConfig: SiteConfiguration;
   llmConfigs: ContentConfiguration[];
 };
 
-// 文件模式配置
+// File pattern configuration
 export type FilePatternConfiguration = {
   /**
    * Whether to include unmatched files last (default: false)
@@ -63,7 +63,7 @@ export type FilePatternConfiguration = {
   orderPatterns?: string[];
 };
 
-// 头部配置
+// Header configuration
 export type HeaderConfiguration = {
   /**
    * Optional: Header title
@@ -79,11 +79,11 @@ export type HeaderConfiguration = {
   summary?: string;
 };
 
-// 内容类型
+// Content type
 export type ContentType = "docs" | "blog";
 
 /**
- * 内容会话配置，支持侧边栏和基于模式的内容检索
+ * Content session configuration, supports sidebar and pattern-based content retrieval
  */
 export type ContentSession =
   | {
@@ -113,28 +113,28 @@ export type ContentSession =
       rss?: string;
     };
 
-// 文档配置
+// Document configuration
 export type DocumentConfiguration = HeaderConfiguration & {
   sessions: ContentSession[];
 };
 
-// 会话文件
+// Session files
 export type SessionFiles = ContentSession & {
   docsFiles: string[];
 };
 
-// 会话文件项
+// Session files item
 export type SessionFilesItem = DocumentConfiguration & {
   sessions: SessionFiles[];
 };
 
-// 额外会话
+// Additional session
 export type AdditionalSession = {
   sessionName: string;
   extraLinks: ExternalLink[];
 };
 
-// 通用配置
+// Common configuration
 export type CommonConfiguration = {
   infixName?: string;
   /**
@@ -152,12 +152,12 @@ export type CommonConfiguration = {
   extraSession?: AdditionalSession;
 };
 
-// 内容配置
+// Content configuration
 export type ContentConfiguration = DocumentConfiguration & CommonConfiguration;
 
 /**
- * 插件选项，用于配置LLM构建器功能
- * 定义生成LLM文件、目录遍历和元数据处理的设置
+ * Plugin options for configuring LLM builder functionality
+ * Defines settings for generating LLM files, directory traversal, and metadata processing
  */
 export type PluginOptions = {
   version: string;

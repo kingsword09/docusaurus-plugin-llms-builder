@@ -11,17 +11,20 @@ import { markdownMetadataParser } from "./parser";
 import type { AdditionalSession, BuilderContext, ContentConfiguration, SessionFiles, SiteConfiguration } from "./types";
 import { htmlContentParser, htmlTitleParser, parseRssItems, sitemapParser } from "./xml";
 
+// Interface for a single LLM session item containing title, link and optional description
 type LLMSessionItem = {
   title: string;
   link: string;
   description?: string;
 };
 
+// Interface for an LLM session containing session name and array of items
 type LLMSession = {
   sessionName: string;
   items: LLMSessionItem[];
 };
 
+// Interface for standard LLM configuration with metadata and sessions
 type LLMStdConfig = {
   title: string;
   description: string;
@@ -29,11 +32,13 @@ type LLMStdConfig = {
   sessions: LLMSession[];
 };
 
+// Interface for a full LLM session item containing title and content
 type LLMFullSessionItem = {
   title: string;
   content: string;
 };
 
+// Interface for full LLM configuration with metadata and full content sessions
 type LLMFullStdConfig = {
   title: string;
   description: string;
@@ -41,8 +46,10 @@ type LLMFullStdConfig = {
   sessions: LLMFullSessionItem[];
 };
 
+// Combined output configuration type containing both standard and full configs
 type LLMOutputConfig = { updatedStandardConfig: LLMStdConfig; updatedFullContentConfig: LLMFullStdConfig };
 
+// Generates standard LLM configuration by processing session files
 export const generateLLMStdConfig = async (
   stdConfig: LLMStdConfig,
   buildFilesPaths: Set<string>,
@@ -82,6 +89,7 @@ export const generateLLMStdConfig = async (
   return stdConfig;
 };
 
+// Generates full LLM configuration with complete content from session files
 export const generateLLMFullStdConfig = async (
   stdFullConfig: LLMFullStdConfig,
   buildFilesPaths: Set<string>,
@@ -189,9 +197,7 @@ export const generateLLMsTxt = async (outDir: string, filename: string, content:
   return generate(outDir, filename, content, true);
 };
 
-/**
- * 初始化LLM配置对象
- */
+// Initialize both standard and full LLM configurations with basic metadata
 const initializeLLMConfigurations = (config: ContentConfiguration): LLMOutputConfig => {
   return {
     updatedStandardConfig: {
@@ -209,9 +215,7 @@ const initializeLLMConfigurations = (config: ContentConfiguration): LLMOutputCon
   };
 };
 
-/**
- * 处理文档类型的会话文件
- */
+// Process documentation type sessions by parsing sitemap and HTML content
 const processDocumentationSession = async (
   sessionFileData: SessionFiles,
   siteConfig: SiteConfiguration,
@@ -257,9 +261,7 @@ const processDocumentationSession = async (
   return { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig };
 };
 
-/**
- * 处理博客类型的会话文件
- */
+// Process blog type sessions by parsing RSS feed content
 const processBlogSession = async (
   sessionFileData: SessionFiles,
   siteConfig: SiteConfiguration,
@@ -295,9 +297,7 @@ const processBlogSession = async (
   return { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig };
 };
 
-/**
- * 处理其他类型的会话文件
- */
+// Process generic session files using pattern filters
 const processGenericSession = async (
   sessionFileData: SessionFiles,
   siteConfig: SiteConfiguration,
@@ -325,9 +325,7 @@ const processGenericSession = async (
   return { updatedStandardConfig, updatedFullContentConfig };
 };
 
-/**
- * 生成并写入LLM文本文件
- */
+// Generate output files based on configuration
 const generateOutputFiles = async (
   llmConfig: ContentConfiguration,
   siteConfig: SiteConfiguration,
@@ -347,6 +345,7 @@ const generateOutputFiles = async (
   }
 };
 
+// Main flow for generating LLMs text files
 export const generateLLMsTxtFlow = async (context: BuilderContext): Promise<void> => {
   const { pluginSiteConfig: siteConfig, llmConfigs } = context;
   const buildFilePaths = await getAllDocusaurusBuildFilesPaths(siteConfig.outDir);
