@@ -23,9 +23,9 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
           version: "2.0.0",
           llmConfigs: [
             {
-              title: "xxx",
-              description: "xxx223uoiu",
-              summary: "xxx223uoiusdfjslkdfjsldkjf",
+              title: "Title",
+              description: "Optional description goes here",
+              summary: "Optional details go here",
               sessions: [
                 {
                   type: "docs",
@@ -33,12 +33,20 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
                   sitemap: "sitemap.xml",
                   patterns: {
                     ignorePatterns: ["**/tutorial-basics/**"],
+                    // includePatterns: ["**/tutorial-extras/**"],
+                    orderPatterns: ["**/tutorial-extras/**"],
+                    includeUnmatched: true,
                   },
                 },
                 {
                   type: "blog",
                   docsDir: "blog",
                   rss: "atom.xml",
+                  patterns: {
+                    ignorePatterns: ["**/mdx-blog-post"],
+                    orderPatterns: ["**/first-blog-post"],
+                    includeUnmatched: true,
+                  },
                 },
               ],
 
@@ -46,10 +54,10 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
               generateLLMsFullTxt: true,
 
               extraSession: {
-                sessionName: "xxx",
+                sessionName: "Reference",
                 extraLinks: [
                   {
-                    title: "xxxxsjlkdfj",
+                    title: "baidu",
                     link: "https://www.baidu.com",
                   },
                 ],

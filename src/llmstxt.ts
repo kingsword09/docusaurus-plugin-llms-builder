@@ -1,4 +1,5 @@
 import { generate } from "@docusaurus/utils";
+import { minimatch } from "minimatch";
 import assert from "node:assert";
 import path from "node:path";
 
@@ -8,7 +9,14 @@ import {
   processLLMSessionsFilesWithPatternFilters,
 } from "./files";
 import { markdownMetadataParser } from "./parser";
-import type { AdditionalSession, BuilderContext, ContentConfiguration, SessionFiles, SiteConfiguration } from "./types";
+import type {
+  AdditionalSession,
+  BuilderContext,
+  ContentConfiguration,
+  RSSFeedItem,
+  SessionFiles,
+  SiteConfiguration,
+} from "./types";
 import { htmlContentParser, htmlTitleParser, parseRssItems, sitemapParser } from "./xml";
 
 // Interface for a single LLM session item containing title, link and optional description
@@ -21,6 +29,7 @@ type LLMSessionItem = {
 // Interface for an LLM session containing session name and array of items
 type LLMSession = {
   sessionName: string;
+  source: "sitemap" | "rss" | "normal";
   items: LLMSessionItem[];
 };
 
@@ -35,6 +44,7 @@ type LLMStdConfig = {
 // Interface for a full LLM session item containing title and content
 type LLMFullSessionItem = {
   title: string;
+  link: string;
   content: string;
 };
 
@@ -43,6 +53,8 @@ type LLMFullStdConfig = {
   title: string;
   description: string;
   summary?: string;
+  // Set of URLs from previously processed sessions for filtering
+  processedUrls: Set<string>;
   sessions: LLMFullSessionItem[];
 };
 
@@ -59,6 +71,7 @@ export const generateLLMStdConfig = async (
   for await (const llmSessionFile of llmSessionFiles) {
     const session: LLMSession = {
       sessionName: llmSessionFile.docsDir,
+      source: "normal",
       items: [],
     };
     for await (const filePath of llmSessionFile.docsFiles) {
@@ -98,7 +111,7 @@ export const generateLLMFullStdConfig = async (
 ): Promise<LLMFullStdConfig> => {
   for await (const llmSessionFile of llmSessionFiles) {
     for await (const filePath of llmSessionFile.docsFiles) {
-      const { title, content } = await markdownMetadataParser({
+      const { title, content, link } = await markdownMetadataParser({
         type: llmSessionFile.type,
         buildFilesPaths,
         filePath,
@@ -113,6 +126,7 @@ export const generateLLMFullStdConfig = async (
       stdFullConfig.sessions.push({
         title: title ?? "",
         content,
+        link,
       });
     }
   }
@@ -210,6 +224,7 @@ const initializeLLMConfigurations = (config: ContentConfiguration): LLMOutputCon
       title: config.title ?? "",
       description: config.description ?? "",
       summary: config.summary ?? "",
+      processedUrls: new Set(),
       sessions: [],
     },
   };
@@ -224,39 +239,66 @@ const processDocumentationSession = async (
 ): Promise<LLMOutputConfig> => {
   assert(sessionFileData.type === "docs", `Session ${sessionFileData.docsDir} is not a docs type, skipping processing`);
 
-  const sessionSummary: LLMSession = {
+  const sessionItem: LLMSession = {
     sessionName: sessionFileData.docsDir,
+    source: "sitemap",
     items: [],
   };
-  const fullContentSession: LLMFullSessionItem = {
-    title: sessionFileData.docsDir,
-    content: "",
-  };
+
+  const { ignorePatterns, includePatterns, orderPatterns, includeUnmatched } = sessionFileData.patterns ?? {};
 
   const sitemapPath = path.join(siteConfig.outDir, sessionFileData.sitemap!);
   const urlList = await sitemapParser(sitemapPath);
   if (!urlList) return { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig };
 
-  for await (const pageUrl of urlList) {
+  let matchedUrls: string[] = [];
+
+  // Process files according to orderPatterns
+  if (orderPatterns) {
+    for await (const orderPattern of orderPatterns) {
+      const matchedUrlsByPattern = urlList.filter((url) => minimatch(url, orderPattern, { matchBase: true }));
+      matchedUrlsByPattern.forEach((url) => matchedUrls.push(url));
+    }
+
+    if (includeUnmatched) {
+      const unmatchedUrls = urlList.filter((url) => !matchedUrls.includes(url));
+      matchedUrls = matchedUrls.concat(unmatchedUrls);
+    }
+  } else {
+    matchedUrls = urlList;
+  }
+
+  for await (const pageUrl of matchedUrls) {
     const htmlFilePath = decodeURIComponent(
       path.join(siteConfig.outDir, pageUrl.replace(siteConfig.siteUrl, ""), "index.html"),
     );
+
+    if (ignorePatterns && ignorePatterns.some((pattern) => minimatch(pageUrl, pattern, { matchBase: true }))) {
+      continue;
+    }
+
+    if (includePatterns && !includePatterns.some((pattern) => minimatch(pageUrl, pattern, { matchBase: true }))) {
+      continue;
+    }
+
     const pageTitle = await htmlTitleParser(htmlFilePath);
     const pageContent = await htmlContentParser(htmlFilePath);
 
-    sessionSummary.items.push({
+    sessionItem.items.push({
       title: pageTitle,
       link: pageUrl,
     });
 
+    if (fullContentConfig.processedUrls.has(pageUrl)) continue;
+    fullContentConfig.processedUrls.add(pageUrl);
     fullContentConfig.sessions.push({
       title: pageTitle,
+      link: pageUrl,
       content: pageContent ?? "",
     });
   }
 
-  standardConfig.sessions.push(sessionSummary);
-  fullContentConfig.sessions.push(fullContentSession);
+  standardConfig.sessions.push(sessionItem);
 
   return { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig };
 };
@@ -270,29 +312,65 @@ const processBlogSession = async (
 ): Promise<LLMOutputConfig> => {
   assert(sessionFileData.type === "blog", `Session ${sessionFileData.docsDir} is not a blog type, skipping processing`);
 
-  const sessionSummary: LLMSession = {
+  const { ignorePatterns, includePatterns, orderPatterns, includeUnmatched } = sessionFileData.patterns ?? {};
+
+  const sessionItem: LLMSession = {
     sessionName: sessionFileData.docsDir,
+    source: "rss",
     items: [],
-  };
-  const fullContentSession: LLMFullSessionItem = {
-    title: sessionFileData.docsDir,
-    content: "",
   };
 
   const rssFilePath = path.join(siteConfig.outDir, sessionFileData.docsDir, sessionFileData.rss!);
   const blogEntries = await parseRssItems(rssFilePath);
 
-  for await (const blogEntry of blogEntries) {
-    sessionSummary.items.push({
+  let matchedRssFeedItems: RSSFeedItem[] = [];
+
+  // Process files according to orderPatterns
+  if (orderPatterns) {
+    for await (const orderPattern of orderPatterns) {
+      const matchedUrlsByPattern = blogEntries.filter((entry) =>
+        minimatch(entry.link, orderPattern, { matchBase: true }),
+      );
+      matchedUrlsByPattern.forEach((rssFeedItem) => matchedRssFeedItems.push(rssFeedItem));
+    }
+
+    if (includeUnmatched) {
+      const unmatchedUrls = blogEntries.filter((entry) => !matchedRssFeedItems.includes(entry));
+      matchedRssFeedItems = matchedRssFeedItems.concat(unmatchedUrls);
+    }
+  } else {
+    matchedRssFeedItems = blogEntries;
+  }
+
+  for await (const blogEntry of matchedRssFeedItems) {
+    if (ignorePatterns && ignorePatterns.some((pattern) => minimatch(blogEntry.link, pattern, { matchBase: true }))) {
+      continue;
+    }
+
+    if (
+      includePatterns &&
+      !includePatterns.some((pattern) => minimatch(blogEntry.link, pattern, { matchBase: true }))
+    ) {
+      continue;
+    }
+
+    sessionItem.items.push({
       title: blogEntry.title,
       description: blogEntry.description,
       link: blogEntry.link,
     });
-    fullContentSession.content = blogEntry.content ?? "";
+
+    if (fullContentConfig.processedUrls.has(blogEntry.link)) continue;
+
+    fullContentConfig.processedUrls.add(blogEntry.link);
+    fullContentConfig.sessions.push({
+      title: blogEntry.title,
+      link: blogEntry.link,
+      content: blogEntry.content ?? "",
+    });
   }
 
-  standardConfig.sessions.push(sessionSummary);
-  fullContentConfig.sessions.push(fullContentSession);
+  standardConfig.sessions.push(sessionItem);
 
   return { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig };
 };
@@ -362,12 +440,9 @@ export const generateLLMsTxtFlow = async (context: BuilderContext): Promise<void
       continue;
     }
 
-    const { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig } =
+    let { updatedStandardConfig: currentStandardConfig, updatedFullContentConfig: currentFullContentConfig } =
       initializeLLMConfigurations(currentLLMConfig);
     const processedSessionFiles: SessionFiles[] = [];
-
-    let currentStandardConfig = standardConfig;
-    let currentFullContentConfig = fullContentConfig;
 
     for await (const sessionFileData of sessionFilesList) {
       if (sessionFileData.type === "docs" && sessionFileData.sitemap) {
@@ -401,6 +476,20 @@ export const generateLLMsTxtFlow = async (context: BuilderContext): Promise<void
         currentFullContentConfig = updatedFullContentConfig;
       }
     }
+
+    currentStandardConfig.sessions = currentStandardConfig.sessions.map((session) => {
+      // If the session source is sitemap, filter out items whose URLs match other sessions' URLs
+      if (session.source === "sitemap") {
+        const otherSessionUrls = new Set(
+          currentStandardConfig.sessions
+            .filter((s) => s.sessionName !== session.sessionName)
+            .flatMap((s) => s.items.map((item) => item.link)),
+        );
+
+        session.items = session.items.filter((item) => !otherSessionUrls.has(item.link));
+      }
+      return session;
+    });
 
     await generateOutputFiles(currentLLMConfig, siteConfig, currentStandardConfig, currentFullContentConfig);
   }
