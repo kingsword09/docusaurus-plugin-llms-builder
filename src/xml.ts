@@ -1,5 +1,5 @@
+import { NodeHtmlMarkdown, parse } from "@kingsword/node-html-markdown";
 import { XMLParser } from "fast-xml-parser";
-import { NodeHtmlMarkdown } from "node-html-markdown";
 import fs from "node:fs/promises";
 
 import type { RSSFeedItem } from "./types";
@@ -71,7 +71,8 @@ export const parseRssItems = async (filePath: string): Promise<RSSFeedItem[]> =>
     let content = item.encoded?.__CDATA || item.encoded || item.content || "";
 
     if (content) {
-      content = NodeHtmlMarkdown.translate(content);
+      const dom = parse(content);
+      content = NodeHtmlMarkdown.translate(dom.querySelector(".markdown") ?? content);
     }
     return {
       title: item.title?.__CDATA || item.title || "",
@@ -90,7 +91,9 @@ export const parseRssItems = async (filePath: string): Promise<RSSFeedItem[]> =>
 export const htmlContentParser = async (filePath: string): Promise<string | null> => {
   try {
     const htmlContent = await fs.readFile(filePath, "utf8");
-    return NodeHtmlMarkdown.translate(htmlContent);
+    const dom = parse(htmlContent);
+
+    return NodeHtmlMarkdown.translate(dom.querySelector(".markdown")?.toString() ?? htmlContent);
   } catch (error) {
     console.warn(`Failed to parse MDX HTML content for file: ${filePath}`, error);
   }
