@@ -46,7 +46,7 @@ const titleParser = (
  * @param siteConfig - Docusaurus config
  * @returns
  */
-export const markdownParser = async (
+const markdownParser = async (
   filePath: string,
   removeContentTitle: boolean,
   siteConfig: DocusaurusConfig,
@@ -178,33 +178,13 @@ export const markdownMetadataParser = async (options: {
 };
 
 /**
- * Clean a description for use in a TOC item
- * @param description - The original description
- * @returns Cleaned description suitable for TOC
- */
-export const cleanDescriptionForToc = (description: string): string => {
-  if (!description) return "";
-
-  // Get just the first line for TOC display
-  const firstLine = description.split("\n")[0] ?? description;
-
-  // Remove heading markers only at the beginning of the line
-  // Be careful to only remove actual heading markers (# followed by space at beginning)
-  // and not hashtag symbols that are part of the content (inline hashtags)
-  const cleaned = firstLine.replace(/^(#+)\s+/g, "");
-
-  // Truncate if too long (150 characters max with ellipsis)
-  return cleaned.length > 150 ? cleaned.substring(0, 147) + "..." : cleaned;
-};
-
-/**
  * Find the best matching string in an array using fuzzy search
  * @param needle - The string to search for
  * @param haystack - Array of strings to search in
  * @param options - Optional Fuse.js options
  * @returns The best matching string or null if no matches found
  */
-export const findBestMatch = (
+const findBestMatch = (
   needle: string,
   haystack: Set<string>,
   options: IFuseOptions<string> = {

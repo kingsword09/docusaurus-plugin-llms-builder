@@ -62,7 +62,7 @@ type LLMFullStdConfig = {
 type LLMOutputConfig = { updatedStandardConfig: LLMStdConfig; updatedFullContentConfig: LLMFullStdConfig };
 
 // Generates standard LLM configuration by processing session files
-export const generateLLMStdConfig = async (
+const generateLLMStdConfig = async (
   stdConfig: LLMStdConfig,
   buildFilesPaths: Set<string>,
   llmSessionFiles: SessionFiles[],
@@ -103,7 +103,7 @@ export const generateLLMStdConfig = async (
 };
 
 // Generates full LLM configuration with complete content from session files
-export const generateLLMFullStdConfig = async (
+const generateLLMFullStdConfig = async (
   stdFullConfig: LLMFullStdConfig,
   buildFilesPaths: Set<string>,
   llmSessionFiles: SessionFiles[],
@@ -139,7 +139,7 @@ export const generateLLMFullStdConfig = async (
  * @param llmStdConfig
  * @returns
  */
-export const standardizeLLMsTxtContent = (llmStdConfig: LLMStdConfig, extraSession?: AdditionalSession): string => {
+const standardizeLLMsTxtContent = (llmStdConfig: LLMStdConfig, extraSession?: AdditionalSession): string => {
   // Generate Title 、Description 、Details
   const headerSection = [`# ${llmStdConfig.title}`, `> ${llmStdConfig.description}`, llmStdConfig.summary]
     .filter(Boolean)
@@ -184,7 +184,7 @@ export const standardizeLLMsTxtContent = (llmStdConfig: LLMStdConfig, extraSessi
  * @param llmFullStdConfig
  * @returns
  */
-export const standardizeLLMsFullTxtContent = (llmFullStdConfig: LLMFullStdConfig): string => {
+const standardizeLLMsFullTxtContent = (llmFullStdConfig: LLMFullStdConfig): string => {
   // Generate Title 、Description 、Details
   const headerSection = [`# ${llmFullStdConfig.title}`, `> ${llmFullStdConfig.description}`, llmFullStdConfig.summary]
     .filter(Boolean)
@@ -209,7 +209,7 @@ export const standardizeLLMsFullTxtContent = (llmFullStdConfig: LLMFullStdConfig
  * @param content
  * @returns
  */
-export const generateLLMsTxt = async (outDir: string, filename: string, content: string): Promise<void> => {
+const generateLLMsTxt = async (outDir: string, filename: string, content: string): Promise<void> => {
   return generate(outDir, filename, content, true);
 };
 

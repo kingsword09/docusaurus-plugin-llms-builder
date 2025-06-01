@@ -141,7 +141,7 @@ export const processLLMSessionsFilesWithPatternFilters = async (
  * @param ignorePatterns - Glob patterns for files to ignore
  * @returns Whether the file should be ignored
  */
-export const shouldIgnoreFile = (baseDir: string, filePath: string, ignorePatterns: string[] = []): boolean => {
+const shouldIgnoreFile = (baseDir: string, filePath: string, ignorePatterns: string[] = []): boolean => {
   if (ignorePatterns.length === 0) {
     return false;
   }
@@ -158,11 +158,7 @@ export const shouldIgnoreFile = (baseDir: string, filePath: string, ignorePatter
  * @param ignorePatterns - Glob patterns for files to ignore
  * @returns Array of file paths
  */
-export const collectMarkdownFiles = async (
-  baseDir: string,
-  dir: string,
-  ignorePatterns?: string[],
-): Promise<string[]> => {
+const collectMarkdownFiles = async (baseDir: string, dir: string, ignorePatterns?: string[]): Promise<string[]> => {
   const files: string[] = [];
   const entries = await fs.readdir(dir, { withFileTypes: true });
 

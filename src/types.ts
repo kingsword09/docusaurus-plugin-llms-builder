@@ -1,7 +1,7 @@
 import type { DocusaurusConfig } from "@docusaurus/types";
 
 // External link configuration
-export type ExternalLink = {
+type ExternalLink = {
   title: string;
   link: string;
   description?: string;
@@ -58,7 +58,7 @@ export type BuilderContext = {
 type SortFunction = (fileA: string, fileB: string) => number;
 
 // File pattern configuration
-export type FilePatternConfiguration = {
+type FilePatternConfiguration = {
   /**
    * Optional: Patterns to ignore when processing files (e.g. ['test/**'])
    */
@@ -77,7 +77,7 @@ export type FilePatternConfiguration = {
 };
 
 // Header configuration
-export type HeaderConfiguration = {
+type HeaderConfiguration = {
   /**
    * Optional: Header title
    */
@@ -107,7 +107,7 @@ export type ContentType = "docs" | "blog";
 /**
  * Content session configuration, supports sidebar and pattern-based content retrieval
  */
-export type ContentSession =
+type ContentSession =
   | {
       type: "docs";
       sessionName?: string;
@@ -138,18 +138,13 @@ export type ContentSession =
     };
 
 // Document configuration
-export type DocumentConfiguration = HeaderConfiguration & {
+type DocumentConfiguration = HeaderConfiguration & {
   sessions: ContentSession[];
 };
 
 // Session files
 export type SessionFiles = ContentSession & {
   docsFiles: string[];
-};
-
-// Session files item
-export type SessionFilesItem = DocumentConfiguration & {
-  sessions: SessionFiles[];
 };
 
 // Additional session
@@ -159,7 +154,7 @@ export type AdditionalSession = {
 };
 
 // Common configuration
-export type CommonConfiguration = {
+type CommonConfiguration = {
   infixName?: string;
   /**
    * Whether to generate llms.txt file (default: true)
