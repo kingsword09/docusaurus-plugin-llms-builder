@@ -70,7 +70,7 @@ export const generateLLMStdConfig = async (
 ): Promise<LLMStdConfig> => {
   for await (const llmSessionFile of llmSessionFiles) {
     const session: LLMSession = {
-      sessionName: llmSessionFile.docsDir,
+      sessionName: llmSessionFile.sessionName ?? llmSessionFile.docsDir,
       source: "normal",
       items: [],
     };

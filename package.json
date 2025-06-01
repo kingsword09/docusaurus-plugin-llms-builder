@@ -1,6 +1,6 @@
 {
   "name": "docusaurus-plugin-llms-builder",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "A Docusaurus plugin for generating standardized LLM configuration files (llms.txt, llms-full.txt)",
   "type": "module",
   "main": "dist/index.cjs",
