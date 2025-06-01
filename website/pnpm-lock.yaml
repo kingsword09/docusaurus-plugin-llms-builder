@@ -38,6 +38,9 @@ importers:
       "@docusaurus/types":
         specifier: 3.8.0
         version: 3.8.0(acorn@8.14.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      docusaurus-plugin-llms-builder:
+        specifier: file:../
+        version: file:..(@docusaurus/core@3.8.0(@mdx-js/react@3.1.0(@types/react@19.1.6)(react@19.1.0))(acorn@8.14.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.6.3))(acorn@8.14.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
@@ -1378,6 +1381,11 @@ packages:
     resolution:
       { integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ== }
 
+  "@kingsword/node-html-markdown@1.3.3":
+    resolution:
+      { integrity: sha512-zhpeeWhHsa0uZSOArXioon6d50F8u0d6uynXOLEhUElJZsRidvPTC5FlTORHWWV3b5bOKnT8hviSXXIXqYyoKw== }
+    engines: { node: ">=20.0.0" }
+
   "@leichtgewicht/ip-codec@2.0.5":
     resolution:
       { integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw== }
@@ -2054,6 +2062,10 @@ packages:
     resolution:
       { integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA== }
 
+  brace-expansion@2.0.1:
+    resolution:
+      { integrity: sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA== }
+
   braces@3.0.3:
     resolution:
       { integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA== }
@@ -2635,6 +2647,12 @@ packages:
       { integrity: sha512-l4gcSouhcgIKRvyy99RNVOgxXiicE+2jZoNmaNmZ6JXiGajBOJAesk1OBlJuM5k2c+eudGdLxDqXuPCKIj6kpw== }
     engines: { node: ">=6" }
 
+  docusaurus-plugin-llms-builder@file:..:
+    resolution: { directory: .., type: directory }
+    engines: { node: ">=20.0.0" }
+    peerDependencies:
+      "@docusaurus/core": ^3.0.0
+
   dom-converter@0.2.0:
     resolution:
       { integrity: sha512-gd3ypIPfOMr9h5jIKq8E3sHOTCjeirnl0WK5ZdS1AW0Odt0b1PaWaHdJ4Qk4klv+YB9aJBS7mESXjFoDQPu6DA== }
@@ -2932,6 +2950,11 @@ packages:
     resolution:
       { integrity: sha512-Atfo14OibSv5wAp4VWNsFYE1AchQRTv9cBGWET4pZWHzYshFSS9NQI6I57rdKn9croWVMbYFbLhJ+yJvmZIIHw== }
 
+  fast-xml-parser@5.2.3:
+    resolution:
+      { integrity: sha512-OdCYfRqfpuLUFonTNjvd30rCBZUneHpSQkCqfaeWQ9qrKcl6XlWeDBNVwGb+INAIxRshuN2jF+BE0L6gbBO2mw== }
+    hasBin: true
+
   fastq@1.19.1:
     resolution:
       { integrity: sha512-GwLTyxkCXjXbxqIhTsMI2Nui8huMPtnxg7krajPJAjnEG/iiOS7i+zCtWGZR9G0NBKbXKh6X9m9UIsYX/N6vvQ== }
@@ -3043,6 +3066,11 @@ packages:
   function-bind@1.1.2:
     resolution:
       { integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA== }
+
+  fuse.js@7.1.0:
+    resolution:
+      { integrity: sha512-trLf4SzuuUxfusZADLINj+dE8clK1frKdmqiJNb1Es75fmI5oY6X2mxLVUciLLjxqw/xr72Dhy+lER6dGd02FQ== }
+    engines: { node: ">=10" }
 
   gensync@1.0.0-beta.2:
     resolution:
@@ -4068,6 +4096,11 @@ packages:
     resolution:
       { integrity: sha512-UtJcAD4yEaGtjPezWuO9wC4nwUnVH/8/Im3yEHQP4b67cXlD/Qr9hdITCU1xDbSEXg2XKNaP8jsReV7vQd00/A== }
 
+  minimatch@10.0.1:
+    resolution:
+      { integrity: sha512-ethXTt3SGGR+95gudmqJ1eNhRO7eGEGIgYA9vnPatK4/etz2MEVDno5GMCibdMTuBMyElzIlgxMna3K94XDIDQ== }
+    engines: { node: 20 || >=22 }
+
   minimatch@3.1.2:
     resolution:
       { integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw== }
@@ -4127,6 +4160,10 @@ packages:
     resolution:
       { integrity: sha512-dPEtOeMvF9VMcYV/1Wb8CPoVAXtp6MKMlcbAt4ddqmGqUJ6fQZFXkNZNkNlfevtNkGtaSoXf/vNNNSvgrdXwtA== }
     engines: { node: ">= 6.13.0" }
+
+  node-html-parser@7.0.1:
+    resolution:
+      { integrity: sha512-KGtmPY2kS0thCWGK0VuPyOS+pBKhhe8gXztzA2ilAOhbUbxa9homF1bOyKvhGzMLXUoRds9IOmr/v5lr/lqNmA== }
 
   node-releases@2.0.19:
     resolution:
@@ -5454,6 +5491,10 @@ packages:
     resolution:
       { integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig== }
     engines: { node: ">=8" }
+
+  strnum@2.1.1:
+    resolution:
+      { integrity: sha512-7ZvoFTiCnGxBtDqJ//Cu6fWtZtc7Y3x+QOirG15wztbdngGSkht27o2pyGWrVy0b4WAy3jbKmnoK6g5VlVNUUw== }
 
   style-to-js@1.1.16:
     resolution:
@@ -7850,6 +7891,10 @@ snapshots:
       "@jridgewell/resolve-uri": 3.1.2
       "@jridgewell/sourcemap-codec": 1.5.0
 
+  "@kingsword/node-html-markdown@1.3.3":
+    dependencies:
+      node-html-parser: 7.0.1
+
   "@leichtgewicht/ip-codec@2.0.5": {}
 
   "@mdx-js/mdx@3.1.0(acorn@8.14.1)":
@@ -8515,6 +8560,10 @@ snapshots:
       balanced-match: 1.0.2
       concat-map: 0.0.1
 
+  brace-expansion@2.0.1:
+    dependencies:
+      balanced-match: 1.0.2
+
   braces@3.0.3:
     dependencies:
       fill-range: 7.1.1
@@ -8984,6 +9033,24 @@ snapshots:
     dependencies:
       "@leichtgewicht/ip-codec": 2.0.5
 
+  docusaurus-plugin-llms-builder@file:..(@docusaurus/core@3.8.0(@mdx-js/react@3.1.0(@types/react@19.1.6)(react@19.1.0))(acorn@8.14.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.6.3))(acorn@8.14.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      "@docusaurus/core": 3.8.0(@mdx-js/react@3.1.0(@types/react@19.1.6)(react@19.1.0))(acorn@8.14.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.6.3)
+      "@docusaurus/utils": 3.8.0(acorn@8.14.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      "@kingsword/node-html-markdown": 1.3.3
+      fast-xml-parser: 5.2.3
+      fuse.js: 7.1.0
+      minimatch: 10.0.1
+    transitivePeerDependencies:
+      - "@swc/core"
+      - acorn
+      - esbuild
+      - react
+      - react-dom
+      - supports-color
+      - uglify-js
+      - webpack-cli
+
   dom-converter@0.2.0:
     dependencies:
       utila: 0.4.0
@@ -9245,6 +9312,10 @@ snapshots:
 
   fast-uri@3.0.6: {}
 
+  fast-xml-parser@5.2.3:
+    dependencies:
+      strnum: 2.1.1
+
   fastq@1.19.1:
     dependencies:
       reusify: 1.1.0
@@ -9325,6 +9396,8 @@ snapshots:
     optional: true
 
   function-bind@1.1.2: {}
+
+  fuse.js@7.1.0: {}
 
   gensync@1.0.0-beta.2: {}
 
@@ -10453,6 +10526,10 @@ snapshots:
 
   minimalistic-assert@1.0.1: {}
 
+  minimatch@10.0.1:
+    dependencies:
+      brace-expansion: 2.0.1
+
   minimatch@3.1.2:
     dependencies:
       brace-expansion: 1.1.11
@@ -10491,6 +10568,11 @@ snapshots:
       skin-tone: 2.0.0
 
   node-forge@1.3.1: {}
+
+  node-html-parser@7.0.1:
+    dependencies:
+      css-select: 5.1.0
+      he: 1.2.0
 
   node-releases@2.0.19: {}
 
@@ -11720,6 +11802,8 @@ snapshots:
   strip-json-comments@2.0.1: {}
 
   strip-json-comments@3.1.1: {}
+
+  strnum@2.1.1: {}
 
   style-to-js@1.1.16:
     dependencies:

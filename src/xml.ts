@@ -2,7 +2,7 @@ import { NodeHtmlMarkdown, parse } from "@kingsword/node-html-markdown";
 import { XMLParser } from "fast-xml-parser";
 import fs from "node:fs/promises";
 
-import type { RSSFeedItem } from "./types";
+import type { HtmlParser, RSSFeedItem } from "./types";
 
 /**
  * Parse sitemap.xml and extract URLs
@@ -23,25 +23,6 @@ export const sitemapParser = async (filePath: string): Promise<string[] | null> 
     return locUrls;
   }
   return null;
-};
-
-/**
- * Parse HTML title from a file
- * @param filePath - Path to the HTML file
- * @returns Parsed title
- */
-export const htmlTitleParser = async (filePath: string): Promise<string> => {
-  const htmlString = await fs.readFile(filePath, "utf8");
-  const titleRegex = /<title[^>]*?>([\s\S]*?)<\/title>/i;
-  const match = htmlString.match(titleRegex);
-
-  if (match && match[1] !== undefined) {
-    return match[1].trim();
-  } else {
-    const normalizedPath = filePath.replace(/\\/g, "/");
-    const parts = normalizedPath.split("/");
-    return parts[-1] ?? filePath;
-  }
 };
 
 /**
@@ -88,12 +69,21 @@ export const parseRssItems = async (filePath: string): Promise<RSSFeedItem[]> =>
  * @param filePath - Path to the HTML file
  * @returns Parsed content
  */
-export const htmlContentParser = async (filePath: string): Promise<string | null> => {
+export const htmlParser = async (filePath: string): Promise<HtmlParser | null> => {
   try {
     const htmlContent = await fs.readFile(filePath, "utf8");
     const dom = parse(htmlContent);
 
-    return NodeHtmlMarkdown.translate(dom.querySelector(".markdown")?.toString() ?? htmlContent);
+    const title = dom.querySelector("title")?.textContent;
+
+    // Get meta description content if available
+    const metaDescription = dom.querySelector('meta[name="description"]')?.getAttribute("content");
+
+    return {
+      title,
+      description: metaDescription,
+      content: NodeHtmlMarkdown.translate(dom.querySelector(".markdown")?.toString() ?? htmlContent),
+    };
   } catch (error) {
     console.warn(`Failed to parse MDX HTML content for file: ${filePath}`, error);
   }

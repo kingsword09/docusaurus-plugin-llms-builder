@@ -17,7 +17,7 @@ import type {
   SessionFiles,
   SiteConfiguration,
 } from "./types";
-import { htmlContentParser, htmlTitleParser, parseRssItems, sitemapParser } from "./xml";
+import { htmlParser, parseRssItems, sitemapParser } from "./xml";
 
 // Interface for a single LLM session item containing title, link and optional description
 type LLMSessionItem = {
@@ -283,12 +283,14 @@ const processDocumentationSession = async (
       continue;
     }
 
-    const pageTitle = await htmlTitleParser(htmlFilePath);
-    const pageContent = await htmlContentParser(htmlFilePath);
+    const htmlParserResult = await htmlParser(htmlFilePath);
+    const pageTitle = htmlParserResult?.title ?? "";
+    const content = htmlParserResult?.content ?? "";
 
     sessionItem.items.push({
       title: pageTitle,
       link: pageUrl,
+      description: htmlParserResult?.description ?? "",
     });
 
     if (fullContentConfig.processedUrls.has(pageUrl)) continue;
@@ -296,7 +298,7 @@ const processDocumentationSession = async (
     fullContentConfig.sessions.push({
       title: pageTitle,
       link: pageUrl,
-      content: pageContent ?? "",
+      content,
     });
   }
 

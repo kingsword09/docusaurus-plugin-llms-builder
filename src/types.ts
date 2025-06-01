@@ -79,6 +79,15 @@ export type HeaderConfiguration = {
   summary?: string;
 };
 
+/**
+ * HTML parser result
+ */
+export type HtmlParser = {
+  title?: string;
+  description?: string;
+  content: string;
+};
+
 // Content type
 export type ContentType = "docs" | "blog";
 

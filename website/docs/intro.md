@@ -1,88 +1,44 @@
 ---
 sidebar_position: 1
+title: Introduction
+description:
+  A powerful Docusaurus plugin that helps you integrate Large Language Models (LLMs) into your documentation by
+  processing and preparing content for LLM consumption.
+sidebar_label: Intro
 ---
 
 # Docusaurus LLMs Builder Plugin
 
 Welcome to the Docusaurus LLMs Builder Plugin! This powerful tool helps you integrate Large Language Models (LLMs) into
-your Docusaurus documentation, enabling dynamic content generation, automated documentation updates, and enhanced user
-interactions.
+your Docusaurus documentation by processing your content and preparing it for LLM consumption. This can enable dynamic
+content generation, automated documentation updates, enhanced user interactions, and more.
 
-## Getting Started
+Whether you're looking to build a question-answering system based on your docs, generate summaries, or perform other
+LLM-driven tasks, this plugin provides the foundation by structuring and consolidating your Docusaurus content.
 
-Let's get you up and running with the Docusaurus LLMs Builder Plugin. Follow these simple steps to enhance your
-documentation with AI capabilities.
+## Get Started Quickly
 
-### Prerequisites
+- **[Installation](./getting-started/installation.md)**: Add the plugin to your Docusaurus project.
+- **[Basic Configuration](./getting-started/configuration.md)**: Learn how to set up the plugin in your
+  `docusaurus.config.js`.
 
-Before you begin, make sure you have:
+## Dive Deeper
 
-- A working [Docusaurus](https://docusaurus.io) site (version 3.0 or higher)
-- [Node.js](https://nodejs.org/en/download/) version 20.0 or above installed
-  - During Node.js installation, ensure you select all recommended dependencies
-  - You can verify your Node.js version by running `node --version` in your terminal
+- **[Basic Usage Guide](./guides/basic-usage.md)**: Follow a step-by-step guide for a common use case.
+- **[Plugin Options (API Reference)](./api/plugin-options.md)**: Explore all the available configuration options to
+  tailor the plugin to your specific needs.
 
-## Installation
+## Key Features
 
-To add the Docusaurus LLMs Builder plugin to your project, use npm:
+- **Content Aggregation**: Gathers content from your Docusaurus `docs` and `blog` sections.
+- **Flexible Configuration**: Use glob patterns to include/exclude files and define processing order.
+- **Multiple Output Formats**: Generate summarized (`llms.txt`) and potentially full-text (`llms_full.txt`) versions of
+  your content.
+- **Extensible**: Configure multiple instances for different parts of your site or different LLM tasks.
+- **Link Inclusion**: Add relevant external links to your LLM-processed content using the `extraSession` feature.
 
-```bash
-npm install -D docusaurus-plugin-llms-builder
+We hope this plugin helps you unlock new possibilities with LLMs and your Docusaurus site!
+
 ```
 
-## Usage
-
-Add the plugin to your `docusaurus.config.js`:
-
-```js
-module.exports = {
-  plugins: [
-    [
-      "docusaurus-plugin-llms-builder",
-      {
-        version: "2.0.0",
-        llmConfigs: [
-          {
-            title: "主文档",
-            sessions: [
-              {
-                type: "docs",
-                docsDir: "docs",
-                sessionName: "文档",
-                sitemap: "sitemap.xml",
-                patterns: {
-                  ignorePatterns: ["**/tutorial-basics/**"],
-                  orderPatterns: ["**/tutorial-extras/**"],
-                  includeUnmatched: true,
-                },
-              },
-              {
-                type: "blog",
-                docsDir: "blog",
-                sessionName: "博客",
-                rss: "atom.xml",
-                patterns: {
-                  ignorePatterns: ["**/mdx-blog-post"],
-                  orderPatterns: ["**/first-blog-post"],
-                  includeUnmatched: true,
-                },
-              },
-            ],
-            generateLLMsTxt: true,
-            generateLLMsFullTxt: true,
-            extraSession: {
-              sessionName: "参考链接",
-              extraLinks: [
-                {
-                  title: "百度",
-                  link: "https://www.baidu.com",
-                },
-              ],
-            },
-          },
-        ],
-      },
-    ],
-  ],
-};
 ```
