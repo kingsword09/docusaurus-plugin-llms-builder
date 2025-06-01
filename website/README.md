@@ -48,12 +48,11 @@ Add the plugin to your `docusaurus.config.js`:
 
 ### FilePatternConfiguration
 
-| Name             | Type     | Required | Default | Description                                            |
-| ---------------- | -------- | -------- | ------- | ------------------------------------------------------ |
-| includeUnmatched | boolean  | No       | false   | Whether to include unmatched files                     |
-| ignorePatterns   | string[] | No       | None    | Glob patterns to ignore                                |
-| includePatterns  | string[] | No       | None    | Glob patterns to include (higher priority than ignore) |
-| orderPatterns    | string[] | No       | None    | Glob patterns for ordering                             |
+| Name            | Type     | Required     | Default | Description                                            |
+| --------------- | -------- | ------------ | ------- | ------------------------------------------------------ | -------------------------- |
+| ignorePatterns  | string[] | No           | None    | Glob patterns to ignore                                |
+| includePatterns | string[] | No           | None    | Glob patterns to include (higher priority than ignore) |
+| orderPatterns   | string[] | sortFunction | No      | None                                                   | Glob patterns for ordering |
 
 ### AdditionalSession
 
@@ -96,7 +95,6 @@ module.exports = {
                 patterns: {
                   ignorePatterns: ["**/tutorial-basics/**"],
                   orderPatterns: ["**/tutorial-extras/**"],
-                  includeUnmatched: true,
                 },
               },
               {
@@ -107,7 +105,6 @@ module.exports = {
                 patterns: {
                   ignorePatterns: ["**/mdx-blog-post"],
                   orderPatterns: ["**/first-blog-post"],
-                  includeUnmatched: true,
                 },
               },
             ],

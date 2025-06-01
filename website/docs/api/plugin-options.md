@@ -129,14 +129,18 @@ Each session object has the following properties:
 
 - **Type:** `boolean`
 - **Required:** No (Default: `false`)
-- **Description:** If set to `true`, the plugin will generate a `llms.txt` file in the root directory of your Docusaurus project. This file typically contains a concatenated version of the text content from the configured sessions, optimized for ingestion by Large Language Models.
+- **Description:** If set to `true`, the plugin will generate a `llms.txt` file in the root directory of your Docusaurus
+  project. This file typically contains a concatenated version of the text content from the configured sessions,
+  optimized for ingestion by Large Language Models.
 - **Example:** `true`
 
 #### `generateLLMsFullTxt`
 
 - **Type:** `boolean`
 - **Required:** No (Default: `false`)
-- **Description:** If set to `true`, the plugin will generate a `llms_full.txt` file in the root directory of your Docusaurus project. This file usually offers a more comprehensive or differently structured output compared to `llms.txt`, potentially including more metadata or closer fidelity to the original content.
+- **Description:** If set to `true`, the plugin will generate a `llms_full.txt` file in the root directory of your
+  Docusaurus project. This file usually offers a more comprehensive or differently structured output compared to
+  `llms.txt`, potentially including more metadata or closer fidelity to the original content.
 - **Example:** `true`
 
 #### `extraSession`
@@ -187,7 +191,6 @@ module.exports = {
                 patterns: {
                   ignorePatterns: ["**/tutorial-basics/**"],
                   orderPatterns: ["**/introduction.md", "**/tutorial-extras/**"],
-                  includeUnmatched: true,
                 },
               },
               {
