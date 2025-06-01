@@ -1,7 +1,11 @@
 ---
 sidebar_position: 2
 title: Basic Configuration
+description:
+  Docusaurus LLMs Builder plugin helps you easily configure and manage LLM-powered features in your documentation.
 ---
+
+<!-- truncate -->
 
 # Basic Configuration
 
@@ -18,7 +22,8 @@ module.exports = {
   plugins: [
     [
       "docusaurus-plugin-llms-builder",
-      {
+      /** @type {import("docusaurus-plugin-llms-builder").PluginOptions} */
+      ({
         // Minimum required configuration options can be discussed here
         // For a full list of options, see the API Reference section.
         version: "2.0.0", // Example version
@@ -36,11 +41,12 @@ module.exports = {
             generateLLMsTxt: true, // Example option
           },
         ],
-      },
+      }),
     ],
     // ... other plugins
   ],
 };
 ```
 
-This enables the plugin with a basic setup. For detailed information on all configuration options, please refer to the [API Reference](../api/plugin-options.md) section.
+This enables the plugin with a basic setup. For detailed information on all configuration options, please refer to the
+[API Reference](../api/plugin-options.md) section.

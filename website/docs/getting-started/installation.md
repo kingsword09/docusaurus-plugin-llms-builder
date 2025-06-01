@@ -1,6 +1,7 @@
 ---
 sidebar_position: 1
 title: Installation
+description: Learn how to install and set up the Docusaurus LLMs Builder plugin in your project.
 ---
 
 # Installation
