@@ -34,6 +34,7 @@ LLM-driven tasks, this plugin provides the foundation by structuring and consoli
 - **Flexible Configuration**: Use glob patterns to include/exclude files and define processing order.
 - **Multiple Output Formats**: Generate summarized (`llms.txt`) and potentially full-text (`llms_full.txt`) versions of
   your content.
+- **CLI Command**: Manually generate LLM files using the `npx docusaurus llms` command for quick updates.
 - **Extensible**: Configure multiple instances for different parts of your site or different LLM tasks.
 - **Link Inclusion**: Add relevant external links to your LLM-processed content using the `extraSession` feature.
 
