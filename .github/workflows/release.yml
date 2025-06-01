@@ -1,0 +1,97 @@
+name: Release Plugin and Deploy Docs
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+" # Matches tags like 1.0.0, 0.2.3, etc.
+
+jobs:
+  build_and_publish_plugin:
+    name: Build and Publish Plugin
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed for creating GitHub Release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for changelog generation if using tools like release-please or conventional-changelog
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
+      - name: Install dependencies (root)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build plugin (root)
+        run: pnpm build
+        env:
+          CI: true
+
+      - name: Publish to NPM
+        run: pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/**"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: Generate release notes automatically based on conventional commits
+          # generateReleaseNotes: true
+
+  build_and_deploy_website:
+    name: Build and Deploy Website
+    needs: build_and_publish_plugin # Ensure plugin is published before deploying docs that might depend on it
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./website
+    permissions:
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      BASE_URL: /docusaurus-plugin-llms-builder/ # Set your GitHub Pages base URL here
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        # fetch-depth: 0 # Not strictly necessary for website build unless using git history for versioning/content
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # Ensure pnpm is available in the working-directory context if needed, or run setup before cd
+          dest: ${{ github.workspace }}/website # installs pnpm in the website directory
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "pnpm"
+          cache-dependency-path: website/pnpm-lock.yaml # Specify lock file for website
+
+      - name: Install dependencies (website)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build website
+        run: pnpm build # BASE_URL is used by Docusaurus build command
+
+      - name: Upload Build Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: website/build
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
