@@ -6,7 +6,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import type { ContentType, DocumentInfo } from "./types";
-import { htmlContentParser } from "./xml";
+import { htmlParser } from "./xml";
 
 /**
  * parse markdown file title
@@ -147,21 +147,26 @@ export const markdownMetadataParser = async (options: {
         ? finalLinkPath
         : findBestMatch(path.join(pathPrefix ?? "", finalLinkPath), buildFilesPaths);
 
-  // For MDX documents, we need to parse components by converting the compiled HTML back to markdown
-  if (isMdx) {
-    const mdxContent = await htmlContentParser(path.join(outDir, finalLinkPath, "index.html"));
-    if (mdxContent) {
-      content = mdxContent;
-    }
-  }
-
   const link = new URL(finalLinkPath, siteUrl).toString();
 
   const title = titleParser(filePath, metadata.frontMatter, metadata.content, metadata.contentTitle);
-  const description =
+  let description =
     (typeof metadata.frontMatter.description === "string" && metadata.frontMatter.description) ||
     metadata.excerpt ||
     "";
+
+  // For MDX documents, we need to parse components by converting the compiled HTML back to markdown
+  if (isMdx) {
+    const htmlParserResult = await htmlParser(path.join(outDir, finalLinkPath, "index.html"));
+
+    if (htmlParserResult) {
+      if (!description) {
+        description = htmlParserResult.description ?? "";
+      }
+
+      content = htmlParserResult.content;
+    }
+  }
 
   return {
     title,
