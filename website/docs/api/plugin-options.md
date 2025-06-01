@@ -94,15 +94,15 @@ Each session object has the following properties:
 ##### `sitemap`
 
     - **Type:** `string`
-    - **Required:** No (but typically provided if `type: "docs"`)
-    - **Description:** The path (relative to the Docusaurus project root) to the sitemap XML file. This is used for sessions of `type: "docs"` to discover pages.
+    - **Required:** No
+    - **Description:** The path (relative to the Docusaurus project root) to the sitemap XML file. This is used for sessions of `type: "docs"` to discover pages. If omitted for `type: "docs"`, the plugin may attempt to find all relevant document files (e.g., `.md`, `.mdx`) within the `docsDir`, but using a sitemap is recommended for accuracy and to respect Docusaurus' routing conventions.
     - **Example:** `"sitemap.xml"`
 
 ##### `rss`
 
     - **Type:** `string`
-    - **Required:** No (but typically provided if `type: "blog"`)
-    - **Description:** The path (relative to the Docusaurus project root) to the RSS feed XML file (usually `atom.xml` or `rss.xml`). This is used for sessions of `type: "blog"` to discover posts.
+    - **Required:** No
+    - **Description:** The path (relative to the Docusaurus project root) to the RSS feed XML file (usually `atom.xml` or `rss.xml`). This is used for sessions of `type: "blog"` to discover posts. If omitted for `type: "blog"`, the plugin may attempt to find all relevant content files (e.g., `.md`, `.mdx`) within the `docsDir`. However, providing an RSS feed is recommended for blog content.
     - **Example:** `"atom.xml"`
 
 ##### `patterns`
@@ -111,30 +111,32 @@ Each session object has the following properties:
     - **Required:** No
     - **Description:** An object that defines glob patterns for fine-grained control over which files are included or excluded, and their processing order.
     - **Properties:**
-      - `ignorePatterns`: `Array<string>` (可选)
-      - `orderPatterns`: `Array<string> | (a: string, b: string) => number` (Optional)
-        - Can be an array of glob strings, files will be arranged according to the order of these pattern matches. For example: `["**/introduction.md", "**/getting-started/**", "**/api/**"]`
-        - Can also be a custom sort function (SortFunction) that takes two file path parameters and returns a sort weight (negative means a comes first, positive means b comes first, 0 means order remains unchanged). For example:
+      - `ignorePatterns`: `Array<string>` (Optional) - Glob patterns for files/directories to exclude.
+      - `orderPatterns`: `Array<string> | ((a: string, b: string) => number)` (Optional)
+        - Can be an array of glob strings. Files matching these patterns will be ordered according to the sequence of patterns. For example: `["**/introduction.md", "**/getting-started/**", "**/api/**"]`.
+        - Can also be a custom sort function that takes two file path strings (relative to project root) and returns a number (`-1` for `a` first, `1` for `b` first, `0` for no change). For example:
           ```ts
           orderPatterns: (a, b) => a.length - b.length // Sort by path length in ascending order
           ```
-        - If both are set, the custom sort function takes precedence.
+        - If both array and function are provided, the custom sort function takes precedence.
+      - `includeUnmatched`: `boolean` (Optional, Default: `true`)
+        - If `orderPatterns` (array form) is used, this option determines how files not matching any `orderPatterns` are handled.
+        - If `true`, unmatched files are typically appended after the ordered files (their relative order might depend on filesystem or sitemap/RSS order).
+        - If `false`, only files explicitly matching an `orderPatterns` glob will be included in the session's output.
+        - This option has no effect if `orderPatterns` is a custom sort function or is not defined.
 
 #### `generateLLMsTxt`
 
 - **Type:** `boolean`
 - **Required:** No (Default: `false`)
-- **Description:** If set to `true`, the plugin will generate a `llms.txt` file. The exact content and purpose of this
-  file would ideally be further explained by the plugin's specific functionality (e.g., a concatenated text file for LLM
-  ingestion).
+- **Description:** If set to `true`, the plugin will generate a `llms.txt` file in the root directory of your Docusaurus project. This file typically contains a concatenated version of the text content from the configured sessions, optimized for ingestion by Large Language Models.
 - **Example:** `true`
 
 #### `generateLLMsFullTxt`
 
 - **Type:** `boolean`
 - **Required:** No (Default: `false`)
-- **Description:** If set to `true`, the plugin will generate a `llms_full.txt` file. Similar to `generateLLMsTxt`, this
-  likely produces a more comprehensive or differently formatted text output for LLMs.
+- **Description:** If set to `true`, the plugin will generate a `llms_full.txt` file in the root directory of your Docusaurus project. This file usually offers a more comprehensive or differently structured output compared to `llms.txt`, potentially including more metadata or closer fidelity to the original content.
 - **Example:** `true`
 
 #### `extraSession`

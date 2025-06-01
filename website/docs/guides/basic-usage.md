@@ -106,6 +106,18 @@ After configuring the plugin and running your Docusaurus build process (e.g., `n
 
 You can then use these generated text files as input for your chosen LLM applications.
 
+## Using the `llms` CLI Command
+
+The Docusaurus LLMs Builder plugin provides a CLI command that allows you to generate the `llms.txt` and `llms-full.txt` files manually, without needing to run a full Docusaurus build. This can be useful for quick updates or when you only need to regenerate the LLM-specific files.
+
+To use the command, you can run it via `npx`:
+
+```bash
+npx docusaurus llms
+```
+
+This command will execute the LLMs Builder plugin based on your existing `docusaurus.config.js` configuration. The generated files (e.g., `llms.txt`, `llms_full.txt`) will be placed in the root directory of your Docusaurus project.
+
 ## Further Customization
 
 This is a basic example. The plugin offers many more options for fine-tuning how your content is processed. For a
