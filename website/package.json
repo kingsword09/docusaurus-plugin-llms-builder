@@ -2,6 +2,7 @@
   "name": "website",
   "version": "0.0.0",
   "private": true,
+  "packageManager": "pnpm@10.11.0",
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
@@ -27,8 +28,8 @@
     "@docusaurus/module-type-aliases": "3.8.0",
     "@docusaurus/tsconfig": "3.8.0",
     "@docusaurus/types": "3.8.0",
-    "docusaurus-plugin-llms-builder": "file:../",
-    "typescript": "~5.6.2"
+    "docusaurus-plugin-llms-builder": "^0.1.4",
+    "typescript": "^5.8.3"
   },
   "browserslist": {
     "production": [
