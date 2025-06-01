@@ -102,7 +102,7 @@ export const processLLMSessionsFilesWithPatternFilters = async (
       });
     }
 
-    if (Array.isArray(patterns.orderPatterns) && patterns.orderPatterns.length > 0) {
+    if (Array.isArray(patterns.orderPatterns)) {
       const orderPatterns = patterns.orderPatterns;
       const matchedFiles = new Set<string>();
 
@@ -119,11 +119,10 @@ export const processLLMSessionsFilesWithPatternFilters = async (
         }
       }
 
-      // Add remaining files if includeUnmatched is true
-      if (patterns.includeUnmatched) {
-        const remainingFiles = filteredFiles.filter((file) => !matchedFiles.has(file));
-        filesToProcess.push(...remainingFiles);
-      }
+      const remainingFiles = filteredFiles.filter((file) => !matchedFiles.has(file));
+      filesToProcess.push(...remainingFiles);
+    } else if (patterns.orderPatterns) {
+      filesToProcess = filteredFiles.sort(patterns.orderPatterns);
     } else {
       filesToProcess = filteredFiles;
     }
