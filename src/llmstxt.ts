@@ -272,14 +272,11 @@ const processDocumentationSession = async (
     matchedUrls = urlList;
   }
 
-  console.warn("QAQ matchedUrls: ", matchedUrls);
-  console.warn("QAQ ignorePatterns: ", ignorePatterns);
   for await (const pageUrl of matchedUrls) {
     const htmlFilePath = decodeURIComponent(
       path.join(siteConfig.outDir, pageUrl.replace(siteConfig.siteUrl, ""), "index.html"),
     );
 
-    console.warn("QAQ pageUrl: ", pageUrl);
     if (ignorePatterns && ignorePatterns.some((pattern) => minimatch(pageUrl, pattern, { matchBase: true }))) {
       continue;
     }
