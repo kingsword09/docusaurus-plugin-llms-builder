@@ -20,7 +20,12 @@ export const sitemapParser = async (filePath: string): Promise<string[] | null> 
 
   if (Array.isArray(data?.urlset?.url) && data.urlset.url.length > 0) {
     const locUrls: string[] = data.urlset.url.map((url: { loc: string[] }) => url.loc.pop());
-    return locUrls;
+
+    return locUrls.sort((a, b) => {
+      const pathA = new URL(a).pathname;
+      const pathB = new URL(b).pathname;
+      return pathA.localeCompare(pathB);
+    });
   }
   return null;
 };

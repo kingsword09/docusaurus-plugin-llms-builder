@@ -11,7 +11,9 @@
     "prepare": "husky",
     "lint": "npx --node-options='--experimental-strip-types' eslint --flag unstable_native_nodejs_ts_config",
     "lint:fix": "pnpm lint --fix",
-    "lint:inspector": "npx eslint-config-inspector"
+    "lint:inspector": "npx eslint-config-inspector",
+    "test": "node --test --experimental-strip-types ./tests/**.test.ts",
+    "test:coverage": "node --test --experimental-test-coverage --experimental-strip-types ./tests/**.test.ts"
   },
   "files": [
     "dist"

@@ -111,9 +111,14 @@ Each session object has the following properties:
     - **Required:** No
     - **Description:** An object that defines glob patterns for fine-grained control over which files are included or excluded, and their processing order.
     - **Properties:**
-      - `ignorePatterns`: `Array<string>` (Optional) - An array of glob patterns. Files matching these patterns will be excluded from processing. Example: `["**/drafts/**", "**/old-features/**"]`
-      - `orderPatterns`: `Array<string>` (Optional) - An array of glob patterns. Files will be processed in the order they are matched by these patterns. Example: `["**/introduction.md", "**/getting-started/**", "**/api/**"]`
-      - `includeUnmatched`: `boolean` (Optional, Default: `true`) - If `true`, files that are not matched by any `orderPatterns` will still be included (usually processed after the ordered files). If `false`, only files matched by `orderPatterns` will be included.
+      - `ignorePatterns`: `Array<string>` (可选)
+      - `orderPatterns`: `Array<string> | (a: string, b: string) => number` (Optional)
+        - Can be an array of glob strings, files will be arranged according to the order of these pattern matches. For example: `["**/introduction.md", "**/getting-started/**", "**/api/**"]`
+        - Can also be a custom sort function (SortFunction) that takes two file path parameters and returns a sort weight (negative means a comes first, positive means b comes first, 0 means order remains unchanged). For example:
+          ```ts
+          orderPatterns: (a, b) => a.length - b.length // Sort by path length in ascending order
+          ```
+        - If both are set, the custom sort function takes precedence.
 
 #### `generateLLMsTxt`
 

@@ -193,7 +193,7 @@ export const standardizeLLMsFullTxtContent = (llmFullStdConfig: LLMFullStdConfig
   // Generate sessions content
   const sessionsContent = llmFullStdConfig.sessions
     .map((session) => {
-      const sessionHeader = `\n\n---\nurl: ${session.link}\n---\n## ${session.title}\n`;
+      const sessionHeader = `\n\n---\nurl: ${session.link}\n---\n# ${session.title}\n`;
       const sessionItems = `\n${session.content.trim()}\n`;
       return sessionHeader + sessionItems + "\n---";
     })
@@ -247,7 +247,7 @@ const processDocumentationSession = async (
     items: [],
   };
 
-  const { ignorePatterns, includePatterns, orderPatterns, includeUnmatched } = sessionFileData.patterns ?? {};
+  const { ignorePatterns, includePatterns, orderPatterns } = sessionFileData.patterns ?? {};
 
   const sitemapPath = path.join(siteConfig.outDir, sessionFileData.sitemap!);
   const urlList = await sitemapParser(sitemapPath);
@@ -257,24 +257,29 @@ const processDocumentationSession = async (
 
   // Process files according to orderPatterns
   if (orderPatterns) {
-    for await (const orderPattern of orderPatterns) {
-      const matchedUrlsByPattern = urlList.filter((url) => minimatch(url, orderPattern, { matchBase: true }));
-      matchedUrlsByPattern.forEach((url) => matchedUrls.push(url));
-    }
+    if (Array.isArray(orderPatterns)) {
+      for await (const orderPattern of orderPatterns) {
+        const matchedUrlsByPattern = urlList.filter((url) => minimatch(url, orderPattern, { matchBase: true }));
+        matchedUrlsByPattern.forEach((url) => matchedUrls.push(url));
+      }
 
-    if (includeUnmatched) {
       const unmatchedUrls = urlList.filter((url) => !matchedUrls.includes(url));
       matchedUrls = matchedUrls.concat(unmatchedUrls);
+    } else {
+      matchedUrls = urlList.sort(orderPatterns);
     }
   } else {
     matchedUrls = urlList;
   }
 
+  console.warn("QAQ matchedUrls: ", matchedUrls);
+  console.warn("QAQ ignorePatterns: ", ignorePatterns);
   for await (const pageUrl of matchedUrls) {
     const htmlFilePath = decodeURIComponent(
       path.join(siteConfig.outDir, pageUrl.replace(siteConfig.siteUrl, ""), "index.html"),
     );
 
+    console.warn("QAQ pageUrl: ", pageUrl);
     if (ignorePatterns && ignorePatterns.some((pattern) => minimatch(pageUrl, pattern, { matchBase: true }))) {
       continue;
     }
@@ -316,7 +321,7 @@ const processBlogSession = async (
 ): Promise<LLMOutputConfig> => {
   assert(sessionFileData.type === "blog", `Session ${sessionFileData.docsDir} is not a blog type, skipping processing`);
 
-  const { ignorePatterns, includePatterns, orderPatterns, includeUnmatched } = sessionFileData.patterns ?? {};
+  const { ignorePatterns, includePatterns, orderPatterns } = sessionFileData.patterns ?? {};
 
   const sessionItem: LLMSession = {
     sessionName: sessionFileData.sessionName ?? sessionFileData.docsDir,
@@ -331,16 +336,21 @@ const processBlogSession = async (
 
   // Process files according to orderPatterns
   if (orderPatterns) {
-    for await (const orderPattern of orderPatterns) {
-      const matchedUrlsByPattern = blogEntries.filter((entry) =>
-        minimatch(entry.link, orderPattern, { matchBase: true }),
-      );
-      matchedUrlsByPattern.forEach((rssFeedItem) => matchedRssFeedItems.push(rssFeedItem));
-    }
-
-    if (includeUnmatched) {
+    if (Array.isArray(orderPatterns)) {
+      for await (const orderPattern of orderPatterns) {
+        const matchedUrlsByPattern = blogEntries.filter((entry) =>
+          minimatch(entry.link, orderPattern, { matchBase: true }),
+        );
+        matchedUrlsByPattern.forEach((rssFeedItem) => matchedRssFeedItems.push(rssFeedItem));
+      }
       const unmatchedUrls = blogEntries.filter((entry) => !matchedRssFeedItems.includes(entry));
       matchedRssFeedItems = matchedRssFeedItems.concat(unmatchedUrls);
+    } else {
+      const entryMap = new Map(blogEntries.map((entry) => [entry.link, entry]));
+      matchedRssFeedItems = Array.from(entryMap.keys())
+        .sort(orderPatterns)
+        .map((link) => entryMap.get(link)!)
+        .filter(Boolean);
     }
   } else {
     matchedRssFeedItems = blogEntries;

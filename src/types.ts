@@ -39,13 +39,26 @@ export type BuilderContext = {
   llmConfigs: ContentConfiguration[];
 };
 
+/*
+ * Optional: A custom sort function to order files.
+ * This function takes two absolute file paths (strings) as input and should return a number.
+ * - Return a negative value if `fileA` should come before `fileB`.
+ * - Return a positive value if `fileA` should come after `fileB`.
+ * - Return zero if their order doesn't matter relative to each other.
+ * If provided, this function takes precedence over `orderByPatterns`.
+ * @param fileA The first absolute file path for comparison.
+ * @param fileB The second absolute file path for comparison.
+ * @returns A number indicating the sort order.
+ * @example
+ * ```ts
+ * // Sort files by filename length (shortest first)
+ * sortFunction: (fileA, fileB) => require('path').basename(fileA).length - require('path').basename(fileB).length
+ * ```
+ */
+type SortFunction = (fileA: string, fileB: string) => number;
+
 // File pattern configuration
 export type FilePatternConfiguration = {
-  /**
-   * Whether to include unmatched files last (default: false)
-   */
-  includeUnmatched?: boolean;
-
   /**
    * Optional: Patterns to ignore when processing files (e.g. ['test/**'])
    */
@@ -60,7 +73,7 @@ export type FilePatternConfiguration = {
   /**
    * Optional: Patterns to order when processing files
    */
-  orderPatterns?: string[];
+  orderPatterns?: string[] | SortFunction;
 };
 
 // Header configuration
