@@ -11,3 +11,8 @@ A Docusaurus plugin that generates standardized LLM prompt files (llms.txt and l
 - Creates llms-full.txt with complete documentation context
 - Configurable content processing and filtering
 - Preserves document structure and relationships
+
+## Documentation
+
+For detailed documentation and usage examples, please visit:
+[docusaurus-plugin-llms-builder Documentation](https://blog.kingsword.tech/docusaurus-plugin-llms-builder/)
