@@ -8,58 +8,21 @@ import {
   getAllDocusaurusBuildFilesPaths,
   processLLMSessionsFilesWithPatternFilters,
 } from "./files";
+import { createLlmsHooks } from "./hooks";
 import { markdownMetadataParser } from "./parser";
 import type {
   AdditionalSession,
   BuilderContext,
   ContentConfiguration,
+  LLMFullStdConfig,
+  LLMOutputConfig,
+  LLMSession,
+  LLMStdConfig,
   RSSFeedItem,
   SessionFiles,
   SiteConfiguration,
 } from "./types";
 import { htmlParser, parseRssItems, sitemapParser } from "./xml";
-
-// Interface for a single LLM session item containing title, link and optional description
-type LLMSessionItem = {
-  title: string;
-  link: string;
-  description?: string;
-};
-
-// Interface for an LLM session containing session name and array of items
-type LLMSession = {
-  sessionName: string;
-  source: "sitemap" | "rss" | "normal";
-  items: LLMSessionItem[];
-};
-
-// Interface for standard LLM configuration with metadata and sessions
-type LLMStdConfig = {
-  title: string;
-  description: string;
-  summary?: string;
-  sessions: LLMSession[];
-};
-
-// Interface for a full LLM session item containing title and content
-type LLMFullSessionItem = {
-  title: string;
-  link: string;
-  content: string;
-};
-
-// Interface for full LLM configuration with metadata and full content sessions
-type LLMFullStdConfig = {
-  title: string;
-  description: string;
-  summary?: string;
-  // Set of URLs from previously processed sessions for filtering
-  processedUrls: Set<string>;
-  sessions: LLMFullSessionItem[];
-};
-
-// Combined output configuration type containing both standard and full configs
-type LLMOutputConfig = { updatedStandardConfig: LLMStdConfig; updatedFullContentConfig: LLMFullStdConfig };
 
 // Generates standard LLM configuration by processing session files
 const generateLLMStdConfig = async (
@@ -193,7 +156,7 @@ const standardizeLLMsFullTxtContent = (llmFullStdConfig: LLMFullStdConfig): stri
   // Generate sessions content
   const sessionsContent = llmFullStdConfig.sessions
     .map((session) => {
-      const sessionHeader = `\n\n---\nurl: ${session.link}\n---\n# ${session.title}\n`;
+      const sessionHeader = `\n\n---\nurl: ${session.link}\n---\n${session.title ? "# " + session.title + "\n" : ""}`;
       const sessionItems = `\n${session.content.trim()}\n`;
       return sessionHeader + sessionItems + "\n---";
     })
@@ -216,13 +179,13 @@ const generateLLMsTxt = async (outDir: string, filename: string, content: string
 // Initialize both standard and full LLM configurations with basic metadata
 const initializeLLMConfigurations = (config: ContentConfiguration): LLMOutputConfig => {
   return {
-    updatedStandardConfig: {
+    llmStdConfig: {
       title: config.title ?? "",
       description: config.description ?? "",
       summary: config.summary ?? "",
       sessions: [],
     },
-    updatedFullContentConfig: {
+    llmFullStdConfig: {
       title: config.title ?? "",
       description: config.description ?? "",
       summary: config.summary ?? "",
@@ -251,7 +214,7 @@ const processDocumentationSession = async (
 
   const sitemapPath = path.join(siteConfig.outDir, sessionFileData.sitemap!);
   const urlList = await sitemapParser(sitemapPath);
-  if (!urlList) return { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig };
+  if (!urlList) return { llmStdConfig: standardConfig, llmFullStdConfig: fullContentConfig };
 
   let matchedUrls: string[] = [];
 
@@ -306,7 +269,7 @@ const processDocumentationSession = async (
 
   standardConfig.sessions.push(sessionItem);
 
-  return { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig };
+  return { llmStdConfig: standardConfig, llmFullStdConfig: fullContentConfig };
 };
 
 // Process blog type sessions by parsing RSS feed content
@@ -383,7 +346,7 @@ const processBlogSession = async (
 
   standardConfig.sessions.push(sessionItem);
 
-  return { updatedStandardConfig: standardConfig, updatedFullContentConfig: fullContentConfig };
+  return { llmStdConfig: standardConfig, llmFullStdConfig: fullContentConfig };
 };
 
 // Process generic session files using pattern filters
@@ -411,7 +374,7 @@ const processGenericSession = async (
     siteConfig,
   );
 
-  return { updatedStandardConfig, updatedFullContentConfig };
+  return { llmStdConfig: updatedStandardConfig, llmFullStdConfig: updatedFullContentConfig };
 };
 
 // Generate output files based on configuration
@@ -451,31 +414,31 @@ export const generateLLMsTxtFlow = async (context: BuilderContext): Promise<void
       continue;
     }
 
-    let { updatedStandardConfig: currentStandardConfig, updatedFullContentConfig: currentFullContentConfig } =
+    let { llmStdConfig: currentStandardConfig, llmFullStdConfig: currentFullContentConfig } =
       initializeLLMConfigurations(currentLLMConfig);
 
     for await (const sessionFileData of sessionFilesList) {
       if (sessionFileData.type === "docs" && sessionFileData.sitemap) {
-        const { updatedStandardConfig, updatedFullContentConfig } = await processDocumentationSession(
+        const { llmStdConfig, llmFullStdConfig } = await processDocumentationSession(
           sessionFileData,
           siteConfig,
           currentStandardConfig,
           currentFullContentConfig,
         );
-        currentStandardConfig = updatedStandardConfig;
-        currentFullContentConfig = updatedFullContentConfig;
+        currentStandardConfig = llmStdConfig;
+        currentFullContentConfig = llmFullStdConfig;
       } else if (sessionFileData.type === "blog" && sessionFileData.rss) {
-        const { updatedStandardConfig, updatedFullContentConfig } = await processBlogSession(
+        const { llmStdConfig, llmFullStdConfig } = await processBlogSession(
           sessionFileData,
           siteConfig,
           currentStandardConfig,
           currentFullContentConfig,
         );
-        currentStandardConfig = updatedStandardConfig;
-        currentFullContentConfig = updatedFullContentConfig;
+        currentStandardConfig = llmStdConfig;
+        currentFullContentConfig = llmFullStdConfig;
       } else {
         const processedSessionFiles: SessionFiles[] = [];
-        const { updatedStandardConfig, updatedFullContentConfig } = await processGenericSession(
+        const { llmStdConfig, llmFullStdConfig } = await processGenericSession(
           sessionFileData,
           siteConfig,
           buildFilePaths,
@@ -483,8 +446,8 @@ export const generateLLMsTxtFlow = async (context: BuilderContext): Promise<void
           currentStandardConfig,
           currentFullContentConfig,
         );
-        currentStandardConfig = updatedStandardConfig;
-        currentFullContentConfig = updatedFullContentConfig;
+        currentStandardConfig = llmStdConfig;
+        currentFullContentConfig = llmFullStdConfig;
       }
     }
 
@@ -502,6 +465,14 @@ export const generateLLMsTxtFlow = async (context: BuilderContext): Promise<void
       return session;
     });
 
-    await generateOutputFiles(currentLLMConfig, siteConfig, currentStandardConfig, currentFullContentConfig);
+    const { hooks, context } = await createLlmsHooks(currentLLMConfig, currentStandardConfig, currentFullContentConfig);
+    await hooks.callHook("generate:prepare", context);
+
+    await generateOutputFiles(
+      currentLLMConfig,
+      siteConfig,
+      context.llmConfig.llmStdConfig,
+      context.llmConfig.llmFullStdConfig,
+    );
   }
 };

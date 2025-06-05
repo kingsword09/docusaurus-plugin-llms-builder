@@ -1,4 +1,5 @@
 import type { DocusaurusConfig } from "@docusaurus/types";
+import type { Hookable } from "hookable";
 
 // External link configuration
 type ExternalLink = {
@@ -169,10 +170,67 @@ type CommonConfiguration = {
    * Optional: Additional external links or references to include
    */
   extraSession?: AdditionalSession;
+
+  /**
+   * Optional: Hooks for customizing the build process
+   */
+  hooks?: Partial<LLMsHooks> | ((hooks: Hookable<LLMsHooks>) => Awaitable<void>);
 };
 
 // Content configuration
 export type ContentConfiguration = DocumentConfiguration & CommonConfiguration;
+
+// Interface for a single LLM session item containing title, link and optional description
+export type LLMSessionItem = {
+  title: string;
+  link: string;
+  description?: string;
+};
+
+// Interface for an LLM session containing session name and array of items
+export type LLMSession = {
+  sessionName: string;
+  source: "sitemap" | "rss" | "normal";
+  items: LLMSessionItem[];
+};
+
+// Interface for standard LLM configuration with metadata and sessions
+export type LLMStdConfig = {
+  title: string;
+  description: string;
+  summary?: string;
+  sessions: LLMSession[];
+};
+
+// Interface for a full LLM session item containing title and content
+export type LLMFullSessionItem = {
+  title?: string;
+  link: string;
+  content: string;
+};
+
+// Interface for full LLM configuration with metadata and full content sessions
+export type LLMFullStdConfig = {
+  title: string;
+  description: string;
+  summary?: string;
+  // Set of URLs from previously processed sessions for filtering
+  processedUrls: Set<string>;
+  sessions: LLMFullSessionItem[];
+};
+
+// Combined output configuration type containing both standard and full configs
+export type LLMOutputConfig = { llmStdConfig: LLMStdConfig; llmFullStdConfig: LLMFullStdConfig };
+
+export type Awaitable<T> = T | Promise<T>;
+export type BuildContext = {
+  llmConfig: LLMOutputConfig;
+  hooks: Hookable<LLMsHooks>;
+};
+
+export type LLMsHooks = {
+  "generate:prepare": (ctx: BuildContext) => void | Promise<void>;
+};
 
 /**
  * Plugin options for configuring LLM builder functionality
